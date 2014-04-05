@@ -1,47 +1,573 @@
 FORMAT: 1A
-HOST: http://www.google.com
+HOST: http://www.plyrhub.com
 
 # plyrhub-ranking
-Notes API is a *short texts saving* service similar to its physical paper presence on your table.
+Set of resources that allow the management and querying of rankings.
 
-# Group Notes
-Notes related resources of the **Notes API**
+# Group Ranking Information
+   
+## Rankings Inventory [/rankings(?platform=web&offset=0&limit=5)]
+### List all the available rankings [GET]
+Returns the list of available rankings. 
+The method can be parameterized to return specific textual values for a certain platform (see <a id="System Platfomrs">System Platforms</a>), 
+and also can paginate the results (see <a id="Pagination Rules">Pagination Rules</a>).   
+The returned data provide the following information:
 
-## Notes Collection [/notes]
-### List all Notes [GET]
-+ Response 200 (application/json)
-
-        [{
-          "id": 1, "title": "Jogging in park"
-        }, {
-          "id": 2, "title": "Pick-up posters from post-office"
-        }]
-
-### Create a Note [POST]
-+ Request (application/json)
-
-        { "title": "Buy cheese and bread for breakfast." }
-
-+ Response 201 (application/json)
-
-        { "id": 3, "title": "Buy cheese and bread for breakfast." }
-
-## Note [/notes/{id}]
-A single Note object with all its details
+- rnk ... the id of the ranking
+- name ... the name of the ranking
+- desc ... a long description of the ranking
+- members ... an aproximate number of members taken into account in the ranking
 
 + Parameters
-    + id (required, number, `1`) ... Numeric `id` of the Note to perform action with. Has example value.
+    + platform (optional, string) ... The id of one of the available platforms
+    + offset (optional, integer) ... The offset to apply in the pagination process
+    + limit (optional, integer) ... The number of items to return 
 
-### Retrieve a Note [GET]
++ Request 
+    + Headers
+
+            Accept-Language: es, en-gb;q=0.8, en;q=0.7
+
 + Response 200 (application/json)
 
-    + Header
+        {
+            "result": {
+                "code": 200
+            },
+            "data": {
+                "rankings": [
+                    {
+                        "rnk": "rAllUsers",
+                        "name": "All Users",
+                        "desc": "This ranking takes into account all users in the platform",
+                        "members": 5000000
+                    },
+                    {
+                        "rnk": "rNewYorkCity",
+                        "name": "NYC",
+                        "desc": "This ranking takes into account all users in New York City",
+                        "members": "300432"
+                    },
+                    {
+                        "rnk": "rMissionWorldDomination",
+                        "name": "World Domination",
+                        "desc": "This ranking takes into account all users playing Mission World Domination",
+                        "members" : "567"
+                    }
+                ]
+            }
+        }
+        
++ Response 400 (application/json)
 
-            X-My-Header: The Value
+        {
+            "result": {
+                "code": 400,
+                "extended": {
+                    [
+                        {
+                            "code": "E400-WRONG-PARAMETER",
+                            "desc": "The parameter [param-name] was wrong"
+                        }
+                    ]
+                }
+            }
+        }
 
++ Response 500
+        
+## Ranking Query [/rankings/{rnk}?top=7&bottom=9]        
+### Retrieves all the data related to a ranking [GET]
+Returns all the information linked to a certain ranking.  
+The returned data provide the following information:
+
+**ranking**
+
+- rnk ... the id of the ranking
+- name ... the name of the ranking
+- desc ... a long description of the ranking
+- members ... an aproximate number of users taken into account in the ranking
+
+**members**
+
+- mbr ... the id of the member
+- pos ... the position of the member in the ranking
+- score ... the score (points) of the member
+- place ... an indication about whether the member belongs to the top (T) of the ranking or to the bottom (B)
+
++ Parameters
+    + rnk (string)... the id of the ranking
+    + top (long)... the first N members of the ranking
+    + bottom (long) ... the last N members of the ranking
+
++ Request
+    + Headers
+
+            Accept-Language: es, en-gb;q=0.8, en;q=0.7
+
++ Response 200 (application/json)
+
+        {
+            "result": {
+                "code": 200
+            },
+            "data": {
+                "ranking": {
+                        "rnk": "rAllUsers",
+                        "name": "All Users",
+                        "desc": "This ranking takes into account all users in the platform",
+                        "members": 5000000
+                    },
+                "members": [
+                    {
+                        "mbr": "AF5609938390000EF",
+                        "pos": 1,
+                        "score": 7898766666,
+                        "place": "T"
+                    },
+                    {
+                        "mbr": "CDF609938390000EF",
+                        "pos": 2,
+                        "score": 7898766,
+                        "place": "B"
+                    }                 
+                ]
+            }
+        }
+
++ Response 400 (application/json)
+
+        {
+            "result": {
+                "code": 400,
+                "extended": {
+                    [
+                        {
+                            "code": "E400-WRONG-PARAMETER",
+                            "desc": "The parameter [param-name] was wrong"
+                        }
+                    ]
+                }
+            }
+        }
+
++ Response 404
+
++ Response 500
+        
+## Ranking [/rankings/{rnk}]        
+### Creates a new ranking [PUT]
+Registers a new ranking. A ranking can be overwritten as many times as needed as long as it has not
+members registered, once there is at least one member registered, the ranking can only be modified or 
+deleted.   
+The data that define a ranking are the following:
+
+**platforms**
+
+- platform ... the id of the platform for which the definition is provided
+- languages ... the set of definitions provided for the ranking. At least one is required.
+
+-   lang ... the language for this definition
+-   name ... the name of the ranking
+-   desc ... a long description fo rthe ranking
+
++ Parameters
+    + rnk (string)... the id of the new ranking
+
++ Request (application/json)
+    + Body
+        
+            {
+                "platforms":[
+                    {
+                        "platform": "web",
+                        "languages": [
+                            {
+                                "lang": "en",
+                                "name": "NYC Rnk",
+                                "desc": "The New York City Ranking"
+                            },
+                            {
+                                "lang": "es",
+                                "name": "NYC Rnk",
+                                "desc": "El ranking de Nueva York"
+                            }
+                        ]
+                    },
+                    {
+                        "platform": "iphone",
+                        "languages": [
+                            {
+                                "lang": "en",
+                                "name": "NYC Rnk",
+                                "desc": "The NYC Ranking"
+                            },
+                            {
+                                "lang": "es",
+                                "name": "NYC Rnk",
+                                "desc": "El ranking de NY"
+                            }
+                        ]
+                    },
+                ]
+            }
+
++ Response 201
+
++ Response 400 (application/json)
+
+        {
+            "result": {
+                "code": 400,
+                "extended": {
+                    [
+                        {
+                            "code": "E400-WRONG-PARAMETER",
+                            "desc": "The parameter [param-name] was wrong"
+                        }
+                    ]
+                }
+            }
+        }
+
++ Response 500
+
+### Modifies the ranking definition [PATCH]
+Allows to make change on the definition of the ranking. The mofidification can affect an existing data, or also can be 
+the addition of full definition for a new language or platform.
+The data that define a ranking are the following:
+
+**platforms**
+
+- platform ... the id of the platform for which the definition is provided
+- languages ... the set of definitions provided for the ranking. At least one is required.
+
+-   lang ... the language for this definition
+-   name ... the name of the ranking (optional if the definition for the language already exists)
+-   desc ... a long description for the ranking (optional if the definition for the language already exists)
+
++ Parameters
+    + rnk (string)... the id of the new ranking
+
++ Request (application/json)
+    + Body
+        
+            {
+                "platforms":[
+                    {
+                        "platform": "web",
+                        "languages": [
+                            {
+                                "lang": "es",
+                                "desc": "Ranking de Nueva York"
+                            }
+                        ]
+                    },
+                    {
+                        "platform": "iphone",
+                        "languages": [
+                            {
+                                "lang": "ru",
+                                "name": "NYC Rnk",
+                                "desc": "The NYC in Russian"
+                            }
+                        ]
+                    },
+                    {
+                        "platform": "android",
+                        "languages": [
+                            {
+                                "lang": "en",
+                                "name": "NYC Rnk",
+                                "desc": "The New York City Ranking"
+                            }
+                        ]
+                    }
+                ]
+            }
+
++ Response 200
+
++ Response 400 (application/json)
+
+        {
+            "result": {
+                "code": 400,
+                "extended": {
+                    [
+                        {
+                            "code": "E400-WRONG-PARAMETER",
+                            "desc": "The parameter [param-name] was wrong"
+                        }
+                    ]
+                }
+            }
+        }
+        
++ Response 404
+
++ Response 500
+
+### Deletes a ranking [DELETE]
+Deletes a ranking.
+
++ Parameters
+    + rnk (string)... the id of the ranking to be deleted
+
++ Response 200
+
++ Response 400 (application/json)
+
+        {
+            "result": {
+                "code": 400,
+                "extended": {
+                    [
+                        {
+                            "code": "E400-WRONG-PARAMETER",
+                            "desc": "The parameter [param-name] was wrong"
+                        }
+                    ]
+                }
+            }
+        }
+
++ Response 404
+
++ Response 500
+
+## Ranking Member [/rankings/{rnk}/members/{mbr}]        
+### Adds/Updates member information [PUT]
+Adds a new member to a ranking or updates the score of the member in the ranking.
+
++ Parameters
+    + rnk (string)... the id of the ranking
+    + mbr (string)... the id of the member
+
++ Request (application/json)
     + Body
 
-            { "id": 2, "title": "Pick-up posters from post-office" }
+            {
+                "score": 5678899
+            }
 
-### Remove a Note [DELETE]
-+ Response 204
++ Response 201
+
++ Response 400 (application/json)
+
+        {
+            "result": {
+                "code": 400,
+                "extended": {
+                    [
+                        {
+                            "code": "E400-WRONG-PARAMETER",
+                            "desc": "The parameter [param-name] was wrong"
+                        }
+                    ]
+                }
+            }
+        }
+
++ Response 404
+
++ Response 500
+
+### Removes a member from a ranking [DELETE]
+Removes a member from a ranking.
+
++ Parameters
+    + rnk (string)... the id of the ranking
+    + mbr (string)... the id of the member
+
++ Response 200
+
++ Response 400 (application/json)
+
+        {
+            "result": {
+                "code": 400,
+                "extended": {
+                    [
+                        {
+                            "code": "E400-WRONG-PARAMETER",
+                            "desc": "The parameter [param-name] was wrong"
+                        }
+                    ]
+                }
+            }
+        }
+
++ Response 404
+
++ Response 500
+
+## Members [/members/{mbr}]        
+### Returns all the rankings for a member [GET]
+Returns all the rankings in which a member participates.  
+The returned data provide the following information for each ranking:
+
+- rnk ... the id of the ranking
+- name ... the sort name of the ranking
+- pos ... the position of the member in the ranking
+- members ... an aproximate number of members taken into account in the ranking
+
++ Parameters
+    + mbr (string)... the id of the member
+    
++ Request
+    + Headers
+
+            Accept-Language: es, en-gb;q=0.8, en;q=0.7
+
++ Response 200 (application/json)
+
+        {
+            "member": "AD454533434EF",
+            "rankings": [
+                {
+                    "rnk": "rAllUsers",
+                    "name": "All Users",
+                    "pos": 5674,
+                    "members": 30456
+                },
+                {
+                    "rnk": "rNewYork",
+                    "name": "NYC Ranking",
+                    "pos": 7674,
+                    "members": 350456
+                }
+            ]
+        }
+
++ Response 400 (application/json)
+
+        {
+            "result": {
+                "code": 400,
+                "extended": {
+                    [
+                        {
+                            "code": "E400-WRONG-PARAMETER",
+                            "desc": "The parameter [param-name] was wrong"
+                        }
+                    ]
+                }
+            }
+        }
+
++ Response 404
+
++ Response 500
+
+### Registers a member in a set of rankings [PUT]
+Registers a member in a set of rankings.  
+The data needed to register the member is the following:
+
+- score (optional) ... the initial score of the member, if not provided, default is zero
+- rankings ... the list of rankings to be registered in
+
++ Parameters
+    + mbr (string)... the id of the member
+    
++ Request (application/json)
+    + Body
+
+            {
+                "score": 678999,
+                "rankings": ["rAllUsers", "rWorldDomination"]
+            }
+            
+
++ Response 201
+
++ Response 400 (application/json)
+
+        {
+            "result": {
+                "code": 400,
+                "extended": {
+                    [
+                        {
+                            "code": "E400-WRONG-PARAMETER",
+                            "desc": "The parameter [param-name] was wrong"
+                        },
+                        {
+                            "code": "E400-WRONG-PARAMETER-VALUE",
+                            "desc": "The value for parameter [param-name] was wrong"
+                        }
+                    ]
+                }
+            }
+        }
+
++ Response 500
+
+### Modifies the member position in all its rankings [POST]
+Modifies the member position in all the rankings in which was participating.  
+The data needed to register the member is the following:
+
+- score ... the score to be applied to all rankings
+
++ Parameters
+    + mbr (string)... the id of the member
+    
++ Request (application/json)
+    + Body
+
+            {
+                "score": 678999
+            }
+            
+
++ Response 200
+
++ Response 400 (application/json)
+
+        {
+            "result": {
+                "code": 400,
+                "extended": {
+                    [
+                        {
+                            "code": "E400-WRONG-PARAMETER",
+                            "desc": "The parameter [param-name] was wrong"
+                        },
+                        {
+                            "code": "E400-WRONG-PARAMETER-VALUE",
+                            "desc": "The value for parameter [param-name] was wrong"
+                        }
+                    ]
+                }
+            }
+        }
+
++ Response 500
+
+### Removes a member [DELETE]
+Removes a member from all rankings in which was paticipating.
+
++ Parameters
+    + mbr (string)... the id of the member
+
++ Response 200
+
++ Response 400 (application/json)
+
+        {
+            "result": {
+                "code": 400,
+                "extended": {
+                    [
+                        {
+                            "code": "E400-WRONG-PARAMETER",
+                            "desc": "The parameter [param-name] was wrong"
+                        }
+                    ]
+                }
+            }
+        }
+
++ Response 404
+
++ Response 500
