@@ -3,23 +3,112 @@ HOST: http://www.plyrhub.com
 
 # plyrhub-ranking
 Set of resources that allow the management and querying of rankings.
+The actions that can be done are the following:
 
-# Group Ranking Information
+* Query all the rankings available
+* Query one ranking 
+* Create a new ranking
+* Modify an existing ranking
+* Delete an existing ranking
+* Register a member in a ranking
+* Remove a member from a ranking
+* Query all the rankings in which a member participates
+* Register a member in one or more rankings
+* Modify the member position in all the rankings 
+* Remove a member from all its rankings
+
+**Platforms**
+
+A ranking can be available in several platforms (web, mobile, iphone...). 
+The concept of platform does not relate to a device, it is a totally arbitrary concept and the use of it, is up to the creator. 
+The most common use-case is to used this to manage different sets of labels/texts/descriptions depending on some criteria.
+
+**Languages**
+
+The labels/texts/descriptions of the ranking can be in multiple languages. There always must be at least one language.   
+
+<a name="ranking_collections">**Ranking Collections**</a>
+
+Rankings can be grouped in collections (because of some criteria), the effect is that everytime a ranking is updated, the rankings in its collection are also updated.
+
+<a name="ranking_properties">**Ranking properties**</a>
+
+Rankings can have properties that define their behaviour:
+
+| Properties |
+| :---------------:|
+
+| Name  | Details   | Values |
+| :------------ |:---------------|:---- |
+|validityTime|the validity period of the score| YEAR, MONTH, WEEK, ETERNAL |
+
+**Models**
+
+The models used in this API are the following:
+
+>| <a name="ranking_model"/>Ranking |
+>| :---------------:|
+>
+>>| Name  | Description   | Details |
+>>| :------------ |:---------------| :---- |
+>>|rnk|the id of the ranking| long, required |
+>>|name|the short name of the ranking| string, required |
+>>|desc|the long name of the ranking| string, required |
+>>|members|an aproximate number of the members taken into account in the ranking| long, required |
+
+>| <a name="member_model"/>Member | members of a ranking|
+>| :---------------:|:--:|
+>
+>>| Name  | Description   | Details |
+>>| :------------ |:---------------| :---- |
+>>|mbr|the id of the member| string, required |
+>>|pos|the position of the member in the ranking| long, required |
+>>|score|the score(points) of the member| long, required |
+>>|place|an indication about whether the member belongs to the top (T) of the ranking or to the bottom (B)| string, required |
+
+>| <a name="platform_model"/>Platform |platform in which a ranking is available|
+>| :---------------:|:---:|
+>
+>>| Name  | Description   | Details |
+>>| :------------ |:---------------| :--- |
+>>|platform|the id of the platform for the ranking| string, required |
+>>|languages|a collection of [languages] (#language_model) in which the platform is available. There must be at least one| Language, required |
+>>|default|if this is the default platform for the ranking| boolean, required |
+
+>>| <a name="language_model"/>Language |languages in which a platform is available|
+>>| :---------------:|:--:|
+>>
+>>>| Name  | Description   | Details |
+>>>| :------------ |:---------------| :----- |
+>>>|lang|the id of the language| string, required |
+>>>|name|the short name of the ranking| string, required |
+>>>|desc|the long name of the ranking| string, required |
+>>>|default|if this is the default language for the platform| boolean, required |
+
+>| <a name="member_position_model"/>Member Position | the position of a member in a ranking |
+>| :---------------:|:----:|
+>
+>>| Name  | Description   | Details |
+>>| :------------ |:---------------|:----- |
+>>|pos|the position of the member in the ranking| long, required |
+>>|score|the score (points) of the member in the ranking| long, required |
+
+
+# Group Ranking Inventory
    
-## Rankings Inventory [/rankings(?platform=web&offset=0&limit=5)]
+## Rankings Inventory [/rankings/inventory?collection=all&status=active&platform=web&offset=0&limit=5]
 ### List all the available rankings [GET]
 Returns the list of available rankings. 
-The method can be parameterized to return specific textual values for a certain platform (see <a id="System Platfomrs">System Platforms</a>), 
-and also can paginate the results (see <a id="Pagination Rules">Pagination Rules</a>).   
+The method can be parameterized to return specific textual values for a certain platform, 
+and also can paginate the results. Only **active** rankings are returned.
 The returned data provide the following information:
 
-- rnk ... the id of the ranking
-- name ... the name of the ranking
-- desc ... a long description of the ranking
-- members ... an aproximate number of members taken into account in the ranking
+* **rankings** : a collection of [Ranking] (#ranking_model) elements
 
 + Parameters
-    + platform (optional, string) ... The id of one of the available platforms
+    + collection (optional, String) ... The collection/s used to query
+    + status (optional, boolean) ... The status of the queried rankings (active or not)
+    + platform (optional, String) ... The id of the platform queried
     + offset (optional, integer) ... The offset to apply in the pagination process
     + limit (optional, integer) ... The number of items to return 
 
@@ -76,64 +165,65 @@ The returned data provide the following information:
 
 + Response 500
         
-## Ranking Query [/rankings/{rnk}?top=7&bottom=9]        
-### Retrieves all the data related to a ranking [GET]
-Returns all the information linked to a certain ranking.  
-The returned data provide the following information:
+## Ranking Admin [/rankings/inventory/{rnk}]        
+### Gets all the info regarding one ranking [GET]
+Returns the full information that defines a ranking.  
+The data returned is the following:
 
-**ranking**
+* **active**: if the ranking is active or not
+* **properties**: a set of [properties] (#ranking_properties) that define the behaviour of the ranking
+* **collection**: the [collection] (#ranking_collections) of the ranking
+* **platforms**: the collection of [Platforms] (#platform_model) in which the ranking will be available. The "default" fields are not mandatory, if they are not specified the first element in the list will be considered the 'default'
 
-- rnk ... the id of the ranking
-- name ... the name of the ranking
-- desc ... a long description of the ranking
-- members ... an aproximate number of users taken into account in the ranking
-
-**members**
-
-- mbr ... the id of the member
-- pos ... the position of the member in the ranking
-- score ... the score (points) of the member
-- place ... an indication about whether the member belongs to the top (T) of the ranking or to the bottom (B)
 
 + Parameters
-    + rnk (string)... the id of the ranking
-    + top (long)... the first N members of the ranking
-    + bottom (long) ... the last N members of the ranking
+    + rnk (string)... the id of the new ranking
 
-+ Request
-    + Headers
++ Response 200
 
-            Accept-Language: es, en-gb;q=0.8, en;q=0.7
-
-+ Response 200 (application/json)
-
-        {
-            "result": {
-                "code": 200
-            },
-            "data": {
-                "ranking": {
-                        "rnk": "rAllUsers",
-                        "name": "All Users",
-                        "desc": "This ranking takes into account all users in the platform",
-                        "members": 5000000
-                    },
-                "members": [
+    + Body
+        
+            {
+                    "active": true,
+                    "collection": "all",
+                    "properties": [
+                        {"validityTime": "ETERNAL"}
+                            ],
+                    "platforms":[
                     {
-                        "mbr": "AF5609938390000EF",
-                        "pos": 1,
-                        "score": 7898766666,
-                        "place": "T"
+                        "platform": "web",
+                        "languages": [
+                            {
+                                "lang": "en",
+                                "name": "NYC Rnk",
+                                "desc": "The New York City Ranking",
+                                "default": true
+                            },
+                            {
+                                "lang": "es",
+                                "name": "NYC Rnk",
+                                "desc": "El ranking de Nueva York"
+                            }
+                        ],
+                        "default": true
                     },
                     {
-                        "mbr": "CDF609938390000EF",
-                        "pos": 2,
-                        "score": 7898766,
-                        "place": "B"
-                    }                 
+                        "platform": "iphone",
+                        "languages": [
+                            {
+                                "lang": "en",
+                                "name": "NYC Rnk",
+                                "desc": "The NYC Ranking"
+                            },
+                            {
+                                "lang": "es",
+                                "name": "NYC Rnk",
+                                "desc": "El ranking de NY"
+                            }
+                        ]
+                    },
                 ]
             }
-        }
 
 + Response 400 (application/json)
 
@@ -151,25 +241,20 @@ The returned data provide the following information:
             }
         }
 
-+ Response 404
-
 + Response 500
-        
-## Ranking [/rankings/{rnk}]        
+
+
 ### Creates a new ranking [PUT]
 Registers a new ranking. A ranking can be overwritten as many times as needed as long as it has not
 members registered, once there is at least one member registered, the ranking can only be modified or 
 deleted.   
 The data that define a ranking are the following:
 
-**platforms**
+* **active**: if the ranking is active or not
+* **properties**: a set of [properties] (#ranking_properties) that define the behaviour of the ranking
+* **collection**: the [collection] (#ranking_collections) of the ranking
+* **platforms**: the collection of [Platforms] (#platform_model) in which the ranking will be available. The "default" fields are not mandatory, if they are not specified the first element in the list will be considered the 'default'
 
-- platform ... the id of the platform for which the definition is provided
-- languages ... the set of definitions provided for the ranking. At least one is required.
-
--   lang ... the language for this definition
--   name ... the name of the ranking
--   desc ... a long description fo rthe ranking
 
 + Parameters
     + rnk (string)... the id of the new ranking
@@ -178,21 +263,28 @@ The data that define a ranking are the following:
     + Body
         
             {
-                "platforms":[
+                    "active": true,
+                    "collection": "all",
+                    "properties": [
+                        {"validityTime": "ETERNAL"}
+                            ],
+                    "platforms":[
                     {
                         "platform": "web",
                         "languages": [
                             {
                                 "lang": "en",
                                 "name": "NYC Rnk",
-                                "desc": "The New York City Ranking"
+                                "desc": "The New York City Ranking",
+                                "default": true
                             },
                             {
                                 "lang": "es",
                                 "name": "NYC Rnk",
                                 "desc": "El ranking de Nueva York"
                             }
-                        ]
+                        ],
+                        "default": true
                     },
                     {
                         "platform": "iphone",
@@ -233,18 +325,14 @@ The data that define a ranking are the following:
 + Response 500
 
 ### Modifies the ranking definition [PATCH]
-Allows to make change on the definition of the ranking. The mofidification can affect an existing data, or also can be 
-the addition of full definition for a new language or platform.
+Allows to make change on the definition of the ranking. The modification can affect an existing data, or also can be 
+the addition of a full definition for a new language or platform.
 The data that define a ranking are the following:
 
-**platforms**
-
-- platform ... the id of the platform for which the definition is provided
-- languages ... the set of definitions provided for the ranking. At least one is required.
-
--   lang ... the language for this definition
--   name ... the name of the ranking (optional if the definition for the language already exists)
--   desc ... a long description for the ranking (optional if the definition for the language already exists)
+* **active**: if the ranking is active or not
+* **properties**: a set of [properties] (#ranking_properties) that define the behaviour of the ranking
+* **collection**: the [collection] (#ranking_collections) of the ranking
+* **platforms**: the collection of [Platforms] (#platform_model) in which the ranking will be available. The "default" fields are not mandatory, if they are not specified the first element in the list will be considered the 'default'
 
 + Parameters
     + rnk (string)... the id of the new ranking
@@ -253,7 +341,8 @@ The data that define a ranking are the following:
     + Body
         
             {
-                "platforms":[
+                    "active": false,
+                    "platforms":[
                     {
                         "platform": "web",
                         "languages": [
@@ -336,9 +425,107 @@ Deletes a ranking.
 
 + Response 500
 
+# Group Ranking Query & Member
+
+## Ranking Query [/rankings/{rnk}?top=7&bottom=9&platform=web]        
+### Retrieves all the data related to a ranking [GET]
+Returns all the information linked to a certain ranking.
+Only **active** rankings can be queried.
+The returned data provide the following information:
+
+* **ranking**: a [Ranking](#ranking_model) element
+* **members**: a collection of [Member](#member_model) elements
+
++ Parameters
+    + rnk (string)... the id of the ranking
+    + top (long)... the first N members of the ranking
+    + bottom (long) ... the last N members of the ranking
+    + platform (string, optional) ... the id of one of the platforms available
+
++ Request
+    + Headers
+
+            Accept-Language: es, en-gb;q=0.8, en;q=0.7
+
++ Response 200 (application/json)
+
+        {
+            "result": {
+                "code": 200
+            },
+            "data": {
+                "ranking": {
+                        "rnk": "rAllUsers",
+                        "name": "All Users",
+                        "desc": "This ranking takes into account all users in the platform",
+                        "members": 5000000
+                    },
+                "members": [
+                    {
+                        "mbr": "AF5609938390000EF",
+                        "pos": 1,
+                        "score": 7898766666,
+                        "place": "T"
+                    },
+                    {
+                        "mbr": "CDF609938390000EF",
+                        "pos": 2,
+                        "score": 7898766,
+                        "place": "B"
+                    }                 
+                ]
+            }
+        }
+
++ Response 400 (application/json)
+
+        {
+            "result": {
+                "code": 400,
+                "extended": {
+                    [
+                        {
+                            "code": "E400-WRONG-PARAMETER",
+                            "desc": "The parameter [param-name] was wrong"
+                        }
+                    ]
+                }
+            }
+        }
+
++ Response 404
+
++ Response 500
+
 ## Ranking Member [/rankings/{rnk}/members/{mbr}]        
+### Gets the member position [GET]
+Gets the member position in a ranking.  
+The returned data provide the following information:
+
+* **position**: the [position] (#member_position_model) of the member in the ranking
+
++ Parameters
+    + rnk (string)... the id of the ranking
+    + mbr (string)... the id of the member
+
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                "pos": "12456",
+                "score": "3455677"
+            }
+
++ Response 404
+
++ Response 500
+
 ### Adds/Updates member information [PUT]
 Adds a new member to a ranking or updates the score of the member in the ranking.
+The information that has to be provided is the following:  
+
+* **score** (long): the score of the member
 
 + Parameters
     + rnk (string)... the id of the ranking
@@ -402,18 +589,22 @@ Removes a member from a ranking.
 
 + Response 500
 
-## Members [/members/{mbr}]        
+# Group Ranking Members
+
+## Members [/members/{mbr}?platform=web]        
 ### Returns all the rankings for a member [GET]
 Returns all the rankings in which a member participates.  
 The returned data provide the following information for each ranking:
 
-- rnk ... the id of the ranking
-- name ... the sort name of the ranking
-- pos ... the position of the member in the ranking
-- members ... an aproximate number of members taken into account in the ranking
+* **rankings**: a collection of all the **active** rankings in which the member participates.  
+For each ranking the following info is returned:  
+
+> * **ranking**: the [ranking] (#ranking_model) definition
+> * **position**: the [position] (#member_position_model) of the member in the ranking
 
 + Parameters
-    + mbr (string)... the id of the member
+    + mbr (string) ... the id of the member
+    + platform (string, optional) ... The id of one of the available platforms
     
 + Request
     + Headers
@@ -423,19 +614,30 @@ The returned data provide the following information for each ranking:
 + Response 200 (application/json)
 
         {
-            "member": "AD454533434EF",
             "rankings": [
                 {
-                    "rnk": "rAllUsers",
-                    "name": "All Users",
-                    "pos": 5674,
-                    "members": 30456
+                    "ranking": {
+                        "rnk": "rAllUsers",
+                        "name": "All Users",
+                        "desc": "This ranking takes into account all users in the platform",
+                        "members": 5000000
+                    },
+                    "position": {
+                        "pos": "12456",
+                        "score": "3455677"
+                    }
                 },
                 {
-                    "rnk": "rNewYork",
-                    "name": "NYC Ranking",
-                    "pos": 7674,
-                    "members": 350456
+                    "ranking": {
+                        "rnk": "rNewYork",
+                        "name": "New York Users",
+                        "desc": "This ranking takes into account all users in NYC",
+                        "members": 5000000
+                    },
+                    "position": {
+                        "pos": "12456",
+                        "score": "1455677"
+                    }
                 }
             ]
         }
@@ -464,8 +666,7 @@ The returned data provide the following information for each ranking:
 Registers a member in a set of rankings.  
 The data needed to register the member is the following:
 
-- score (optional) ... the initial score of the member, if not provided, default is zero
-- rankings ... the list of rankings to be registered in
+- rankings ... the list of rankings in which the user participates. Initially the score is 0
 
 + Parameters
     + mbr (string)... the id of the member
@@ -474,10 +675,11 @@ The data needed to register the member is the following:
     + Body
 
             {
-                "score": 678999,
-                "rankings": ["rAllUsers", "rWorldDomination"]
+                "rankings": [
+                    "rAllUsers", 
+                    "rWorldDomination"
+                    ]
             }
-            
 
 + Response 201
 
@@ -507,7 +709,8 @@ The data needed to register the member is the following:
 Modifies the member position in all the rankings in which was participating.  
 The data needed to register the member is the following:
 
-- score ... the score to be applied to all rankings
+- **score** ... the score to be applied to all rankings
+- **collection** ... the [collection of rankings] (#ranking_collections) to be updated 
 
 + Parameters
     + mbr (string)... the id of the member
@@ -516,7 +719,8 @@ The data needed to register the member is the following:
     + Body
 
             {
-                "score": 678999
+                "score": 678999,
+                "collection": "cWorldDomination"
             }
             
 
