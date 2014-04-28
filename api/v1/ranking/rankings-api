@@ -1,0 +1,1204 @@
+{
+    "apiVersion": "v1",
+    "swaggerVersion": "1.2",
+    "basePath": "http://localhost:8080/api/v1",
+    "resourcePath": "/rankings",
+    "produces": [
+        "application/json",
+        "application/xml"
+    ],
+    "consumes": [
+        "application/json",
+        "application/xml"
+    ],
+    "apis": [
+
+        {
+            "path": "/rankings",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Returns the list of all available rankings",
+                    "notes": "Returns the list of all available rankings in the platform (active, not active or both)",
+                    "responseClass": "RankingsResponse",
+                    "nickname": "rankingList",
+                    "parameters": [
+                        {
+                            "name": "collections",
+                            "description": "The queried collections (separated by ',' if more than one)",
+                            "paramType": "query",
+                            "required": false,
+                            "allowMultiple": true,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "status",
+                            "description": "The status of the queried rankings (values are active or not_active)",
+                            "paramType": "query",
+                            "required": false,
+                            "allowMultiple": false,
+                            "dataType": "string",
+                            "enum":[
+                                "active",
+                                "not_active"
+                            ]
+                        },
+                        {
+                            "name": "platform",
+                            "description": "The platform for which the descriptions are returned.",
+                            "paramType": "query",
+                            "required": false,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "count",
+                            "description": "The number of rankings to return in this query (can be up to +/- 100)",
+                            "paramType": "query",
+                            "required": false,
+                            "allowMultiple": false,
+                            "dataType": "long",
+                            "max": 100
+                        },
+                        {
+                            "name": "pgtk",
+                            "description": "A token identifying the starting point to apply the 'count'",
+                            "paramType": "query",
+                            "required": false,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "Accept-Language",
+                            "description": "The preferred language for the response",
+                            "paramType": "header",
+                            "required": false,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "<strong>OK</strong> - Success"
+                        },
+                        {
+                            "code": 400,
+                            "message": "<strong>E400-NV-STATUS</strong> - Non valid status<br/><strong>E400-NV-PGINFO</strong> - Non valid pagination info"
+                        },
+                        {
+                            "code": 401,
+                            "message": "<strong>E401-UNAUTHORIZED_ACCESS</strong> - Not enough permissions granted"
+                        },
+                        {
+                            "code": 404,
+                            "message": "<strong>E404-COLLECTION-NOT-FOUND</strong> - The requested collection does not exists<br/><strong>E404-PLATFORM-NOT-FOUND</strong> - The requested platform does not exists"
+                        },
+                        {
+                            "code": 500,
+                            "message": "<strong>E500-SERVER-ERROR</strong> - Error processing the request"
+                        }
+                    ]
+                }
+            ]
+        } ,
+        {
+            "path": "/rankings/{rnk}",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Returns the whole information about the ranking",
+                    "notes": "Returns the whole information about the ranking: platforms, languages, properties, status, collections...",
+                    "responseClass": "RankingResponse",
+                    "nickname": "rankingGet",
+                    "parameters": [
+                        {
+                            "name": "rnk",
+                            "description": "The queried ranking",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "<strong>OK</strong> - Success"
+                        },
+                        {
+                            "code": 400,
+                            "message": "<strong>E400-GENERIC-ERROR</strong> - Non valid request"
+                        },
+                        {
+                            "code": 401,
+                            "message": "<strong>E401-UNAUTHORIZED_ACCESS</strong> - Not enough permissions granted"
+                        },
+                        {
+                            "code": 404,
+                            "message": "<strong>E404-RANKING-NOT-FOUND</strong> - The requested ranking does not exists"
+                        },
+                        {
+                            "code": 500,
+                            "message": "<strong>E500-SERVER-ERROR</strong> - Error processing the request"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/rankings/{rnk}",
+            "operations": [
+                {
+                    "method": "POST",
+                    "summary": "Creates a new ranking",
+                    "notes": "Creates a new ranking. If the ranking already exist it will be overwritten unless at least one member is registered. In this case the ranking should be modified through the PATCH method",
+                    "nickname": "rankingPost",
+                    "parameters": [
+                        {
+                            "name": "rnk",
+                            "description": "The id of the new ranking",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "body",
+                            "description": "The info about the new ranking",
+                            "paramType": "body",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "RankingRequest"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "<strong>OK</strong> - Success"
+                        },
+                        {
+                            "code": 400,
+                            "message": "<strong>E400-BODY-ERROR</strong> - Non valid values for: [List of fields with non valid values]"
+                        },
+                        {
+                            "code": 401,
+                            "message": "<strong>E401-UNAUTHORIZED_ACCESS</strong> - Not enough permissions granted"
+                        },
+                        {
+                            "code": 404,
+                            "message": "<strong>E404-RANKING-NOT-FOUND</strong> - The requested ranking does not exists"
+                        },
+                        {
+                            "code": 500,
+                            "message": "<strong>E500-SERVER-ERROR</strong> - Error processing the request"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/rankings/{rnk}",
+            "operations": [
+                {
+                    "method": "PATCH",
+                    "summary": "Modifies an existing ranking",
+                    "notes": "Modifies an existing ranking.The modification can affect an existing data, or also can be the addition of a whole definition for a new language or platform.Partial modifications are allowed.",
+                    "nickname": "rankingPatch",
+                    "parameters": [
+                        {
+                            "name": "rnk",
+                            "description": "The id of the ranking",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "body",
+                            "description": "The info about the new ranking",
+                            "paramType": "body",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "RankingRequest"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "<strong>OK</strong> - Success"
+                        },
+                        {
+                            "code": 400,
+                            "message": "<strong>E400-BODY-ERROR</strong> - Non valid values for: [List of fields with non valid values]"
+                        },
+                        {
+                            "code": 401,
+                            "message": "<strong>E401-UNAUTHORIZED_ACCESS</strong> - Not enough permissions granted"
+                        },
+                        {
+                            "code": 404,
+                            "message": "<strong>E404-RANKING-NOT-FOUND</strong> - The requested ranking does not exists"
+                        },
+                        {
+                            "code": 500,
+                            "message": "<strong>E500-SERVER-ERROR</strong> - Error processing the request"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/rankings/{rnk}",
+            "operations": [
+                {
+                    "method": "DELETE",
+                    "summary": "Deletes a ranking",
+                    "notes": "Deletes a ranking and all the information related to it: members...",
+                    "nickname": "rankingDel",
+                    "parameters": [
+                        {
+                            "name": "rnk",
+                            "description": "The id of the ranking",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "<strong>OK</strong> - Success"
+                        },
+                        {
+                            "code": 401,
+                            "message": "<strong>E401-UNAUTHORIZED_ACCESS</strong> - Not enough permissions granted"
+                        },
+                        {
+                            "code": 404,
+                            "message": "<strong>E404-RANKING-NOT-FOUND</strong> - The requested ranking does not exists"
+                        },
+                        {
+                            "code": 500,
+                            "message": "<strong>E500-SERVER-ERROR</strong> - Error processing the request"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/rankings/{rnk}/view",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Returns a view of a ranking",
+                    "notes": "The view of a ranking is a set made of N members extracted from the top, and M members extracted from the bottom",
+                    "responseClass": "RankingViewResponse",
+                    "nickname": "rankingView",
+                    "parameters": [
+                        {
+                            "name": "rnk",
+                            "description": "The id of the ranking",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "member_base",
+                            "description": "The id of a member to include in the returned set of members",
+                            "paramType": "query",
+                            "required": false,
+                            "allowMultiple": false,
+                            "dataType": "String"
+                        },
+                        {
+                            "name": "fromTop",
+                            "description": "The N members to be extracted from the top of the ranking. The values allowed are in the range [0,100]. Default value is 10",
+                            "paramType": "query",
+                            "required": false,
+                            "allowMultiple": false,
+                            "dataType": "integer"
+                        },
+                        {
+                            "name": "fromBottom",
+                            "description": "The M members to be extracted from the bottom of the ranking. The values allowed are in the range [0,100]. Default value is 10",
+                            "paramType": "query",
+                            "required": false,
+                            "allowMultiple": false,
+                            "dataType": "integer"
+                        },
+                        {
+                            "name": "platform",
+                            "description": "The id of the platform to use",
+                            "paramType": "query",
+                            "required": false,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "Accept-Language",
+                            "description": "The preferred language for the response",
+                            "paramType": "header",
+                            "required": false,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        }
+
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "<strong>OK</strong> - Success"
+                        },
+                        {
+                            "code": 400,
+                            "message": "<strong>E400-NV-TOP</strong> - Non valid fromTop parameter<br/><strong>E400-NV-BOTTOM</strong> - Non valid fromBottom parameter"
+                        },
+                        {
+                            "code": 401,
+                            "message": "<strong>E401-UNAUTHORIZED_ACCESS</strong> - Not enough permissions granted"
+                        },
+                        {
+                            "code": 404,
+                            "message": "<strong>E404-RANKING-NOT-FOUND</strong> - The requested ranking does not exists<br/><strong>E404-PLATFORM-NOT-FOUND</strong> - The requested platform does not exists"
+                        },
+                        {
+                            "code": 500,
+                            "message": "<strong>E500-SERVER-ERROR</strong> - Error processing the request"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/rankings/{rnk}/members/{mbr}",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Returns the member position in the ranking",
+                    "notes": "Returns the member position in the ranking",
+                    "responseClass": "RankingMemberResponse",
+                    "nickname": "rankingMemberGet",
+                    "parameters": [
+                        {
+                            "name": "rnk",
+                            "description": "The id of the ranking",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "mbr",
+                            "description": "The id of the member",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "<strong>OK</strong> - Success"
+                        },
+                        {
+                            "code": 401,
+                            "message": "<strong>E401-UNAUTHORIZED_ACCESS</strong> - Not enough permissions granted"
+                        },
+                        {
+                            "code": 404,
+                            "message": "<strong>E404-RANKING-NOT-FOUND</strong> - The requested ranking does not exists<br/><strong>E404-MEMBER-NOT-FOUND</strong> - The requested member does not exists"
+                        },
+                        {
+                            "code": 500,
+                            "message": "<strong>E500-SERVER-ERROR</strong> - Error processing the request"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/rankings/{rnk}/members/{mbr}",
+            "operations": [
+                {
+                    "method": "POST",
+                    "summary": "Adds/Modifies a member in a ranking",
+                    "notes": "Adds/Modifies a member in a ranking",
+                    "nickname": "rankingMemberPOST",
+                    "parameters": [
+                        {
+                            "name": "rnk",
+                            "description": "The id of the ranking",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "mbr",
+                            "description": "The id of the member",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "body",
+                            "description": "The new score to update the ranking",
+                            "paramType": "body",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "RankingMemberRequest"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "<strong>OK</strong> - Success"
+                        },
+                        {
+                            "code": 400,
+                            "message": "<strong>E400-BODY-ERROR</strong> - Non valid values for: [List of fields with non valid values]"
+                        },
+                        {
+                            "code": 401,
+                            "message": "<strong>E401-UNAUTHORIZED_ACCESS</strong> - Not enough permissions granted"
+                        },
+                        {
+                            "code": 404,
+                            "message": "<strong>E404-RANKING-NOT-FOUND</strong> - The requested ranking does not exists<br/><strong>E404-MEMBER-NOT-FOUND</strong> - The requested member does not exists"
+                        },
+                        {
+                            "code": 500,
+                            "message": "<strong>E500-SERVER-ERROR</strong> - Error processing the request"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/rankings/{rnk}/members/{mbr}",
+            "operations": [
+                {
+                    "method": "DELETE",
+                    "summary": "Removes a member from the ranking",
+                    "notes": "Removes a member from the ranking",
+                    "nickname": "rankingMemberDEL",
+                    "parameters": [
+                        {
+                            "name": "rnk",
+                            "description": "The id of the ranking",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "mbr",
+                            "description": "The id of the member",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "<strong>OK</strong> - Success"
+                        },
+                        {
+                            "code": 401,
+                            "message": "<strong>E401-UNAUTHORIZED_ACCESS</strong> - Not enough permissions granted"
+                        },
+                        {
+                            "code": 404,
+                            "message": "<strong>E404-RANKING-NOT-FOUND</strong> - The requested ranking does not exists<br/><strong>E404-MEMBER-NOT-FOUND</strong> - The requested member does not exists"
+                        },
+                        {
+                            "code": 500,
+                            "message": "<strong>E500-SERVER-ERROR</strong> - Error processing the request"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/members/{mbr}",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Returns all the rankings in which the member participates",
+                    "notes": "Returns all the rankings in which the member participates",
+                    "responseClass": "MemberRankingsResponse",
+                    "nickname": "membersGet",
+                    "parameters": [
+                        {
+                            "name": "mbr",
+                            "description": "The id of the member",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "platform",
+                            "description": "The id of the platform to use",
+                            "paramType": "query",
+                            "required": false,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "Accept-Language",
+                            "description": "The preferred language for the response",
+                            "paramType": "header",
+                            "required": false,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "<strong>OK</strong> - Success"
+                        },
+                        {
+                            "code": 401,
+                            "message": "<strong>E401-UNAUTHORIZED_ACCESS</strong> - Not enough permissions granted"
+                        },
+                        {
+                            "code": 404,
+                            "message": "<strong>E404-MEMBER-NOT-FOUND</strong> - The requested member does not exists<br/><strong>E404-PLATFORM-NOT-FOUND</strong> - The requested platform does not exists"
+                        },
+                        {
+                            "code": 500,
+                            "message": "<strong>E500-SERVER-ERROR</strong> - Error processing the request"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/members/{mbr}/rankings",
+            "operations": [
+                {
+                    "method": "POST",
+                    "summary": "Registers a member in a set of rankings",
+                    "notes": "Registers a member in a set of rankings. This is a convenience method and never removes a member from a ranking, to do that use [DEL]/rankings/{rnk}/members/{mbr}",
+                    "nickname": "membersPostRankings",
+                    "parameters": [
+                        {
+                            "name": "mbr",
+                            "description": "The id of the member",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "body",
+                            "description": "The list of rankings",
+                            "paramType": "body",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "MemberRankingsRequest"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "<strong>OK</strong> - Success"
+                        },
+                        {
+                            "code": 401,
+                            "message": "<strong>E401-UNAUTHORIZED_ACCESS</strong> - Not enough permissions granted"
+                        },
+                        {
+                            "code": 404,
+                            "message": "<strong>E404-MEMBER-NOT-FOUND</strong> - The requested member does not exists"
+                        },
+                        {
+                            "code": 500,
+                            "message": "<strong>E500-SERVER-ERROR</strong> - Error processing the request"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/members/{mbr}/collections",
+            "operations": [
+                {
+                    "method": "POST",
+                    "summary": "Modifies the member position in all the rankings belonging to the specified collections",
+                    "notes": "Modifies the member position in all the rankings belonging to the specified collections",
+                    "nickname": "membersPostCollections",
+                    "parameters": [
+                        {
+                            "name": "mbr",
+                            "description": "The id of the member",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        },
+                        {
+                            "name": "body",
+                            "description": "The list of collections",
+                            "paramType": "body",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "MemberCollectionsRequest"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "<strong>OK</strong> - Success"
+                        },
+                        {
+                            "code": 401,
+                            "message": "<strong>E401-UNAUTHORIZED_ACCESS</strong> - Not enough permissions granted"
+                        },
+                        {
+                            "code": 404,
+                            "message": "<strong>E404-MEMBER-NOT-FOUND</strong> - The requested member does not exists<br/><strong>E404-COLLECTION-NOT-FOUND</strong> - The requested collection does not exists"
+                        },
+                        {
+                            "code": 500,
+                            "message": "<strong>E500-SERVER-ERROR</strong> - Error processing the request"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/members/{mbr}/collections",
+            "operations": [
+                {
+                    "method": "DELETE",
+                    "summary": "Removes a member from all its rankings",
+                    "notes": "Removes a member from all its rankings",
+                    "nickname": "membersDel",
+                    "parameters": [
+                        {
+                            "name": "mbr",
+                            "description": "The id of the member",
+                            "paramType": "path",
+                            "required": true,
+                            "allowMultiple": false,
+                            "dataType": "string"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "<strong>OK</strong> - Success"
+                        },
+                        {
+                            "code": 401,
+                            "message": "<strong>E401-UNAUTHORIZED_ACCESS</strong> - Not enough permissions granted"
+                        },
+                        {
+                            "code": 404,
+                            "message": "<strong>E404-MEMBER-NOT-FOUND</strong> - The requested member does not exists"
+                        },
+                        {
+                            "code": 500,
+                            "message": "<strong>E500-SERVER-ERROR</strong> - Error processing the request"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "models": {
+
+        "ExtendedCode": {
+            "id": "ExtendedCode",
+            "properties": {
+                "extendedCode": {
+                    "type": "string",
+                    "required": true,
+                    "description": "Additional code with extended information about the error"
+                }
+            }
+        },
+
+        "Result": {
+            "id": "Result",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "required": true,
+                    "description": "HTTP code showing the result of the request"
+                },
+                "extendedCodes": {
+                    "type": "array",
+                    "required": true,
+                    "items": {
+                        "$ref": "ExtendedCode"
+                    },
+                    "description": "List of additional message about the request (usually error messages)"
+                }
+            }
+        },
+
+        "Pagination": {
+            "id": "pagination",
+            "properties": {
+                "pgtk": {
+                    "type": "string",
+                    "description": "The token to be used in the next request",
+                    "required": true
+                },
+                "size": {
+                    "type": "long",
+                    "description": "The number of elements returned in this request",
+                    "required": false
+                },
+                "moreResults": {
+                    "type": "boolean",
+                    "description": "Whether there are more elements or not",
+                    "required": false
+                }
+             }
+        },
+
+        "ListRankingData": {
+            "id": "listRankingData",
+            "properties": {
+                "rnk": {
+                    "type": "string",
+                    "description": "The id of the ranking",
+                    "required": true
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The sort name of the ranking",
+                    "required": false
+                },
+                "desc": {
+                    "type": "string",
+                    "description": "The long name of the ranking",
+                    "required": false
+                },
+                "status": {
+                    "type": "string",
+                    "description": "The current status of the ranking",
+                    "required": false,
+                    "enum":[
+                      "active", "not_active"
+                    ]
+                }
+            }
+        },
+
+        "RankingsResponseData": {
+            "id": "rankingsResponseData",
+            "properties": {
+                "ranking": {
+                    "items": {
+                        "$ref": "ListRankingData"
+                    },
+                    "type": "Array",
+                    "description": "The selected rankings",
+                    "required": true
+                }
+            }
+        },
+
+        "RankingsResponse": {
+            "id": "response",
+            "properties": {
+                "result": {
+                    "type": "Result",
+                    "description": "The result of the request",
+                    "required": true
+                },
+                "data": {
+                    "type": "RankingsResponseData",
+                    "description": "The information about the selected rankings",
+                    "required": false
+                },
+                "pagination": {
+                    "type": "Pagination",
+                    "description": "Information about the pagination results",
+                    "required": false
+                }
+            }
+        },
+
+        "PlatformData": {
+            "id": "platformData",
+            "properties": {
+                "platform": {
+                    "type": "string",
+                    "description": "The id of the platform",
+                    "required": true
+                },
+                "default": {
+                    "type": "boolean",
+                    "description": "If this is the default platform for the ranking",
+                    "required": true
+                },
+                "status": {
+                    "type": "string",
+                    "description": "The current status of the ranking (active, not_active)",
+                    "required": true
+                },
+                "languages": {
+                    "items": {
+                        "$ref": "LanguagesData"
+                    },
+                    "type": "Array",
+                    "description": "The languages available for the platform",
+                    "required": true
+                }
+            }
+        },
+
+        "LanguagesData": {
+            "id": "languagesData",
+            "properties": {
+                "lang": {
+                    "type": "string",
+                    "description": "The id of the language",
+                    "required": true
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The sort name for the ranking",
+                    "required": false
+                },
+                "desc": {
+                    "type": "string",
+                    "description": "The long name for the ranking",
+                    "required": false
+                },
+                "default": {
+                    "type": "boolean",
+                    "description": "If this is the default language for the ranking",
+                    "required": true
+                },
+                "status": {
+                    "type": "string",
+                    "description": "The current status of this description",
+                    "required": true,
+                    "enum":[
+                        "active", "not_active"
+                    ]
+                }
+            }
+        },
+
+        "RankingPropertyData": {
+            "id": "rankingPropertyData",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "The name of the property",
+                    "required": true
+                },
+                "value": {
+                    "type": "string",
+                    "description": "The value of the property",
+                    "required": true
+                },
+                "type": {
+                    "type": "string",
+                    "description": "The type of the property (number, string, timestamp, boolean)",
+                    "required": true,
+                    "enum": [
+                        "number",
+                        "string",
+                        "timestamp",
+                        "boolean"
+                    ]
+                },
+                "status": {
+                    "type": "string",
+                    "description": "The current status of the property",
+                    "required": false,
+                    "enum":[
+                        "active", "not_active"
+                    ]
+                }
+            }
+        },
+
+        "RankingData": {
+            "id": "rankingData",
+            "properties": {
+                "collection": {
+                    "type": "string",
+                    "description": "The id of the collection of the ranking",
+                    "required": true
+                },
+                "properties": {
+                    "items": {
+                        "$ref": "RankingPropertyData"
+                    },
+                    "type": "Array",
+                    "description": "The properties of the ranking",
+                    "required": true
+                },
+                "platforms": {
+                    "items": {
+                        "$ref": "PlatformData"
+                    },
+                    "type": "Array",
+                    "description": "The available platforms for the ranking",
+                    "required": true
+                },
+                "status": {
+                    "type": "string",
+                    "description": "The current status of the ranking (active, not_active)",
+                    "required": true
+                }
+            }
+        },
+
+
+        "RankingRequest": {
+            "id": "request",
+            "properties": {
+                "ranking": {
+                    "type": "RankingData",
+                    "description": "The info about the ranking",
+                    "required": true
+                }
+            }
+        },
+
+        "RankingResponse": {
+            "id": "response",
+            "properties": {
+                "result": {
+                    "type": "Result",
+                    "description": "The result of the request",
+                    "required": true
+                },
+                "data": {
+                    "type": "RankingData",
+                    "description": "The information whole information about the requested ranking",
+                    "required": false
+                }
+            }
+        },
+
+        "RankingViewRanking": {
+            "id": "rankingViewRanking",
+            "properties": {
+                "rnk": {
+                    "type": "string",
+                    "description": "The id of the ranking",
+                    "required": true
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The sort name of the ranking",
+                    "required": false
+                },
+                "desc": {
+                    "type": "string",
+                    "description": "The long name of the ranking",
+                    "required": false
+                }
+            }
+        },
+
+        "RankingViewMember": {
+            "id": "rankingViewMember",
+            "properties": {
+                "mbr": {
+                    "type": "string",
+                    "description": "The id of the member",
+                    "required": true
+                },
+                "pos": {
+                    "type": "long",
+                    "description": "Position of the member in the ranking",
+                    "required": true
+                },
+                "score": {
+                    "type": "long",
+                    "description": "Score of the member in the ranking",
+                    "required": true
+                },
+                "place": {
+                    "type": "string",
+                    "description": "If the member come from the top (T), from the bottom (B) of the ranking, or if it has been inserted (I)",
+                    "required": true
+                }
+            }
+        },
+
+        "RankingViewData": {
+            "id": "rankingViewData",
+            "properties": {
+                "ranking": {
+                    "type": "RankingViewRanking",
+                    "description": "The ranking information",
+                    "required": true
+                },
+                "members": {
+                    "items": {
+                        "$ref": "RankingViewMember"
+                    },
+                    "type": "Array",
+                    "description": "The members included in this view of the ranking",
+                    "required": true
+                }
+            }
+        },
+
+        "RankingViewResponse": {
+            "id": "response",
+            "properties": {
+                "result": {
+                    "type": "Result",
+                    "description": "The result of the request",
+                    "required": true
+                },
+                "data": {
+                    "type": "RankingViewData",
+                    "description": "The info about the view of this ranking",
+                    "required": false
+                }
+            }
+        },
+
+        "RankingMemberData": {
+            "id": "rankingMemberData",
+            "properties": {
+                "pos": {
+                    "type": "long",
+                    "description": "The position of the member in the ranking",
+                    "required": true
+                },
+                "score": {
+                    "type": "long",
+                    "description": "The score of the member in the ranking",
+                    "required": true
+                }
+            }
+        },
+
+        "RankingMemberResponse": {
+            "id": "response",
+            "properties": {
+                "result": {
+                    "type": "Result",
+                    "description": "The result of the request",
+                    "required": true
+                },
+                "data": {
+                    "type": "RankingMemberData",
+                    "description": "The info about the member in this ranking",
+                    "required": false
+                }
+            }
+        } ,
+
+        "RankingMemberRequest": {
+            "id": "request",
+            "properties": {
+                "score": {
+                    "type": "long",
+                    "description": "The new score to update the ranking",
+                    "required": true
+                }
+            }
+        },
+
+        "MemberRanking": {
+            "id": "response",
+            "properties": {
+                "ranking": {
+                    "type": "RankingViewRanking",
+                    "description": "The info about the ranking",
+                    "required": true
+                },
+                "pos": {
+                    "type": "long",
+                    "description": "Position of the member in the ranking",
+                    "required": true
+                },
+                "score": {
+                    "type": "long",
+                    "description": "Score of the member in the ranking",
+                    "required": true
+                }
+            }
+        } ,
+
+        "MemberRankingsData": {
+            "id": "rankingMemberData",
+            "properties": {
+                "members": {
+                    "items": {
+                        "$ref": "MemberRanking"
+                    },
+                    "type": "Array",
+                    "description": "The rankings and the position of the member in its rankings",
+                    "required": true
+                }
+            }
+        },
+
+        "MemberRankingsResponse": {
+            "id": "response",
+            "properties": {
+                "result": {
+                    "type": "Result",
+                    "description": "The result of the request",
+                    "required": true
+                },
+                "data": {
+                    "type": "MemberRankingData",
+                    "description": "The info about the ranking of the member",
+                    "required": false
+                }
+            }
+        },
+
+        "MemberRankingsRequest": {
+            "id": "request",
+            "properties": {
+                "rankings": {
+                    "items": {
+                        "$ref": "string"
+                    },
+                    "type": "Array",
+                    "description": "The list of rankings",
+                    "required": true
+                }
+            }
+        },
+
+        "MemberCollectionsRequest": {
+            "id": "request",
+            "properties": {
+                "collections": {
+                    "items": {
+                        "$ref": "string"
+                    },
+                    "type": "Array",
+                    "description": "The list of collections",
+                    "required": true
+                },
+                "score": {
+                    "type": "long",
+                    "description": "The new score to take into account in all the rankings of the specified collections",
+                    "required": true
+                }
+            }
+        }
+
+    }
+}
