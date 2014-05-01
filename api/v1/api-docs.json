@@ -1,7 +1,7 @@
 {
     "apiVersion": "v1",
     "swaggerVersion": "1.2",
-    "basePath":"http://localhost:8080/api/v1",
+    "basePath":"http://api.plyrhub.com/api/v1",
     "apis": [
         {
             "path": "/ranking/rankings-api",
