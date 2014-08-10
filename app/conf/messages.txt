@@ -1,0 +1,15 @@
+
+plyrhub.generic.error = error genérico
+plyrhub.non.valid.body = Body no válido, verificar formato, según Content-type
+
+plyrhub.p.converter.non.valid.value = valor no válido
+plyrhub.p.converter.non.valid.body.value = valor del 'body' no válido
+plyrhub.p.converter.non.valid.type = tipo no soportado en conversores de parámetros
+plyrhub.p.converter.missing.value = falta el campo  <-> error.path.missing
+plyrhub.p.converter.mandatory.value.not.provided
+
+plyrhub.not.authorized.owner
+plyrhub.owner.authorization.generic.error
+plyrhub.not.authorized.user
+plyrhub.user.authorization.generic.error
+plyrhub.non.expected.authorization.error
