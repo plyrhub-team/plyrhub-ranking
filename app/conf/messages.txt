@@ -6,7 +6,7 @@ plyrhub.p.converter.non.valid.value = valor no válido
 plyrhub.p.converter.non.valid.body.value = valor del 'body' no válido
 plyrhub.p.converter.non.valid.type = tipo no soportado en conversores de parámetros
 plyrhub.p.converter.missing.value = falta el campo  <-> error.path.missing
-plyrhub.p.converter.mandatory.value.not.provided
+plyrhub.p.converter.mandatory.value.not.provided <-> in case of "body" says that it could be due to the content-type
 
 plyrhub.not.authorized.owner
 plyrhub.owner.authorization.generic.error

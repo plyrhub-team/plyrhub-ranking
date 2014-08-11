@@ -20,9 +20,13 @@ package com.plyrhub.ranking.service
 import akka.actor.Actor
 import com.plyrhub.api.model.StateActive
 import com.plyrhub.core.context.OperationContext
-import com.plyrhub.core.protocol.{Complete, StartOperation}
+import com.plyrhub.core.protocol.{SimpleFailure, Complete, StartOperation}
 import com.plyrhub.ranking.model.RankingName
 import com.plyrhub.ranking.service.protocol.{CreateRanking2, CreateRanking, RankingCreated}
+import com.plyrhub.core.store.RedisStore
+
+// TODO: review implicits
+import play.api.libs.concurrent.Execution.Implicits._
 
 class RankingCreator extends Actor {
 
@@ -30,14 +34,34 @@ class RankingCreator extends Actor {
     case StartOperation(ctx: OperationContext, message: CreateRanking) =>
       println("telling everything is done")
 
+      val theSender = sender()
+
+      val f = RedisStore.storePosition("ranking1", "m1", 9)
+      f.onSuccess{
+        case l => theSender ! Complete(RankingCreated(RankingName("es--rnk1", "ss", "ll", true, StateActive())))
+      }
+      f.onFailure{
+        case t => theSender ! Complete(SimpleFailure())
+      }
+
       //sender ! OperationCompleted(Right(SimpleSuccess()))
-      sender ! Complete(RankingCreated(RankingName("es", "ss", "ll", true, StateActive())))
+      //sender ! Complete(RankingCreated(RankingName("es", "ss", "ll", true, StateActive())))
 
     case StartOperation(ctx: OperationContext, message: CreateRanking2) =>
       println("telling everything is done")
 
+      val theSender = sender()
+
+      val f = RedisStore.storePosition("ranking2", "m2", 9)
+      f.onSuccess{
+        case l => theSender ! Complete(RankingCreated(RankingName("es--rnk2", "ss", "ll", true, StateActive())))
+      }
+      f.onFailure{
+        case t => theSender ! Complete(SimpleFailure())
+      }
+
       //sender ! OperationCompleted(Right(SimpleSuccess()))
-      sender ! Complete(RankingCreated(RankingName("es", "ss", "ll", true, StateActive())))
+      //sender ! Complete(RankingCreated(RankingName("es", "ss", "ll", true, StateActive())))
   }
 
 }

@@ -13,6 +13,7 @@ libraryDependencies ++= Seq(
   jdbc,
   cache,
   ws,
+  "com.livestream" %% "scredis" % "1.1.2",
   "org.scalatest" % "scalatest_2.11" % "2.2.0" % "test"
 )
 

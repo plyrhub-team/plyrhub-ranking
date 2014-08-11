@@ -15,14 +15,12 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.core.log
+package com.plyrhub.core.store
 
-import play.api.Logger
+import scredis.Redis
 
-trait Loggable {
+trait RedisConfig {
 
-  lazy val log = Logger(s"plyrh-rnk.${this.getClass.getName}")
+  lazy val redis = Redis()
 
 }
-
-

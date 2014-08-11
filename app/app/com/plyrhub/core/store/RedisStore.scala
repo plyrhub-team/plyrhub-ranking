@@ -15,14 +15,14 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.core.log
+package com.plyrhub.core.store
 
-import play.api.Logger
+object RedisStore extends RedisConfig {
 
-trait Loggable {
+  def storePosition(ranking:String, member:String, score:Long) = {
 
-  lazy val log = Logger(s"plyrh-rnk.${this.getClass.getName}")
+    redis.zAdd(ranking, (member, score))
+
+  }
 
 }
-
-
