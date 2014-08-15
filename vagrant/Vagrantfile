@@ -21,7 +21,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
   # config.vm.network "forwarded_port", guest: 80, host: 8080
+  # REDIS ->>>
   config.vm.network "forwarded_port", guest: 6379, host: 6379 
+  # MONGO ->>>
+  config.vm.network "forwarded_port", guest: 27017, host: 27017 
+  config.vm.network "forwarded_port", guest: 27018, host: 27018 
+  config.vm.network "forwarded_port", guest: 27019, host: 27019 
+  config.vm.network "forwarded_port", guest: 28017, host: 28017 
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
@@ -60,15 +66,25 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Shell provisioning
   # config.vm.provision "shell", path: "redis-provisioning.sh"
 
+  # BASICS
+  config.vm.provision "shell" do |s|
+    s.path = "basics-prov.sh"
+  end
+
   # REDIS
   config.vm.provision "shell" do |s|
     s.path = "redis-prov.sh"
     s.args = "http://download.redis.io/releases", "redis-2.8.13.tar.gz", "redis-2.8.13" 
   end
 
-  # MYSQL
+  # MONGO
   config.vm.provision "shell" do |s|
-    s.path = "mysql-prov.sh"
-    s.args = "5.5"
+    s.path = "mongo-prov.sh"
+    s.args = "2.6.3"
+  end
+
+  # JsMin
+  config.vm.provision "shell" do |s|
+    s.path = "jsmin-prov.sh"
   end
 end
