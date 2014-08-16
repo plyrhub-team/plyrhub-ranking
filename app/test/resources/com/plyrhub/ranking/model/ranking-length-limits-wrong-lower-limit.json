@@ -1,0 +1,30 @@
+{
+    "collections": [
+        {
+            "collection": "c1"
+        }
+    ],
+    "platforms": [
+        {
+            "platform": "desk",
+            "names": [
+                {
+                    "lang": "e",
+                    "shortName": "rk",
+                    "longName": "lk",
+                    "default": true,
+                    "status": "active"
+                }
+            ],
+            "default": true,
+            "status": "active"
+        }
+    ],
+    "properties": [
+        {
+            "prop": "resetPeriod",
+            "value": "weekly"
+        }
+    ],
+    "status": "active"
+}

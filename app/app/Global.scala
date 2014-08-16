@@ -3,8 +3,7 @@
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as
- *     published by the Free Software Foundation (version 3 of the
- *     License).
+ *     published by the Free Software Foundation.
  *
  *     This program is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,6 +16,7 @@
 
 import java.io.File
 
+import com.netflix.config.{DynamicPropertyFactory, ConfigurationManager}
 import com.plyrhub.api.utils.HttpResults._
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.ranking.conf.Starter
@@ -33,6 +33,14 @@ object Global extends GlobalSettings with Loggable {
     // warm-up application
     log.debug("Warming up app ...")
     Starter.warmup()
+
+    val r = ConfigurationManager.isConfigurationInstalled
+
+    //ConfigurationManager.loadPropertiesFromResources("config.properties")
+
+    val r1 = ConfigurationManager.isConfigurationInstalled
+
+    val uno = DynamicPropertyFactory.getInstance().getStringProperty("archaius.first", "")
 
 
     // do the default behaviour

@@ -3,9 +3,8 @@
  * Copyright (C) 2014  Enrique Aguilar Esnaola
  *
  *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU Affero General Public License as
- *     published by the Free Software Foundation (version 3 of the
- *     License).
+ *     it under the terms of the GNU Affero General Public License Version 3
+ *     as published by the Free Software Foundation.
  *
  *     This program is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,32 +19,6 @@ package com.plyrhub.api.model
 
 import com.plyrhub.core.log.Loggable
 import play.api.libs.json.{JsValue, Json}
-
-//  {
-//    "result": {
-//      "code": "string",
-//      "extendedCodes": [
-//    {
-//      "extendedCode": "string"
-//    }
-//      ]
-//    },
-//    "data": {
-//      "ranking": [
-//    {
-//      "rnk": "string",
-//      "name": "string",
-//      "desc": "string",
-//      "status": "string"
-//    }
-//      ]
-//    },
-//    "pagination": {
-//      "pgtk": "string",
-//      "size": "long",
-//      "moreResults": "boolean"
-//    }
-//  }
 
 case class Result(code: Int, extendedCode: Option[String] = None, additional: Option[Seq[String]] = None)
 

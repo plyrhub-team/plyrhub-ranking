@@ -1,10 +1,10 @@
+
 /*
  * Copyright (C) 2014  Enrique Aguilar Esnaola
  *
  *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU Affero General Public License as
- *     published by the Free Software Foundation (version 3 of the
- *     License).
+ *     it under the terms of the GNU Affero General Public License Version 3
+ *     as published by the Free Software Foundation.
  *
  *     This program is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,13 +15,14 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.ranking.controller
+package com.plyrhub.api.codes
 
-import play.api.mvc.Controller
+object ApiParams {
 
-object MemberController extends Controller {
-
-
-
+  val status = "status"
+  val fromTop = "fromTop"
+  val fromBottom = "fromBottom"
+  val paginationCount = "count"
+  val paginationPgtk = "pgtk"
 
 }

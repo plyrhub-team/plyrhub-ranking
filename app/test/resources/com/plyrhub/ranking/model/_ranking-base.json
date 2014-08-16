@@ -1,0 +1,30 @@
+{
+    "collections": [
+        {
+            "collection": "col1"
+        }
+    ],
+    "platforms": [
+        {
+            "platform": "desktop",
+            "names": [
+                {
+                    "lang": "es",
+                    "shortName": "rnk1",
+                    "longName": "long rnk1",
+                    "default": true,
+                    "status": "active"
+                }
+            ],
+            "default": true,
+            "status": "active"
+        }
+    ],
+    "properties": [
+        {
+            "prop": "resetPeriod",
+            "value": "weekly"
+        }
+    ],
+    "status": "active"
+}

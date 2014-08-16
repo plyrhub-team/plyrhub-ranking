@@ -2,9 +2,8 @@
  * Copyright (C) 2014  Enrique Aguilar Esnaola
  *
  *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU Affero General Public License as
- *     published by the Free Software Foundation (version 3 of the
- *     License).
+ *     it under the terms of the GNU Affero General Public License Version 3
+ *     as published by the Free Software Foundation.
  *
  *     This program is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,31 +17,66 @@
 package com.plyrhub.ranking.model
 
 import com.plyrhub.api.model.State
+import com.plyrhub.ranking.conf.RankingConfig.ModelConstraints
 import play.api.data.validation.ValidationError
-import play.api.libs.json._
 
 import scala.util.{Try, Failure, Success}
 
 // JSON library
-import play.api.libs.json.Reads._ // Custom validation helpers
-import play.api.libs.functional.syntax._ // Combinator syntax
 
+import play.api.libs.json._
+
+// Custom validation helpers
+
+import play.api.libs.json.Reads._
+
+// Combinator syntax
+
+import play.api.libs.functional.syntax._
+
+
+import ModelConstraints._
 
 case class RankingCollection(collection: String)
+
 object RankingCollection {
 
-  // Implicit Json-Inception
-  implicit val collectionFormat = Json.format[RankingCollection]
+  implicit object RankingCollectionReads extends Reads[RankingCollection] {
+    override def reads(json: JsValue) = {
+
+      Try {
+        val collection = (json \ "collection").as[String]
+
+        if (collection.length < rnkCollectionsMinLength || collection.length > rnkCollectionsMaxLength)
+          throw new IllegalArgumentException("No valid field length")
+
+        collection
+
+      } match {
+        case Success(s) => JsSuccess(RankingCollection(s))
+        case Failure(e:IllegalArgumentException) => JsError(Seq(JsPath() -> Seq(ValidationError("plyrhub.error.non.valid.collection.length"))))
+        case Failure(thrown) => JsError(Seq(JsPath() -> Seq(ValidationError("plyrhub.error.non.valid.collection"))))
+      }
+
+    }
+
+  }
+
+  implicit val rankingCollectionWrites = Json.writes[RankingCollection]
 }
 
 case class RankingName(lang: String, shortName: String, longName: String, default: Boolean, status: State)
+
 object RankingName {
 
   // Serialization with combinators
-  implicit val rankingNameReads:Reads[RankingName] = (
-    (__ \ "lang").read[String] and
-      (__ \ "shortName").read[String] and
-      (__ \ "longName").read[String] and
+  implicit val rankingNameReads: Reads[RankingName] = (
+    (__ \ "lang").read[String]
+      (minLength[String](rnkNameLangMinLength) keepAnd maxLength[String](rnkNameLangMaxLength)) and
+      (__ \ "shortName").read[String]
+        (minLength[String](rnkNameShortNameMinLength) keepAnd maxLength[String](rnkNameShortNameMaxLength)) and
+      (__ \ "longName").read[String]
+        (minLength[String](rnkNameLongNameMinLength) keepAnd maxLength[String](rnkNameLongNameMaxLength)) and
       (__ \ "default").read[Boolean] and
       (__ \ "status").read[State]
     )(RankingName.apply _)
@@ -51,12 +85,15 @@ object RankingName {
 }
 
 case class RankingPlatform(platform: String, names: Seq[RankingName], default: Boolean, status: State)
+
 object RankingPlatform {
 
   // Serialization with combinators
-  implicit val rankingPlatformReads:Reads[RankingPlatform] = (
-    (__ \ "platform").read[String] and
-      (__ \ "names").read[Seq[RankingName]] and
+  implicit val rankingPlatformReads: Reads[RankingPlatform] = (
+    (__ \ "platform").read[String]
+      (minLength[String](rnkPlatformIdMin) keepAnd maxLength[String](rnkPlatformIdMax)) and
+      (__ \ "names").read[Seq[RankingName]]
+        (minLength[Seq[RankingName]](rnkPlatformNamesMin) keepAnd maxLength[Seq[RankingName]](rnkPlatformNamesMax)) and
       (__ \ "default").read[Boolean] and
       (__ \ "status").read[State]
     )(RankingPlatform.apply _)
@@ -71,11 +108,16 @@ sealed abstract class RankingProp(val prop: String, val value: String = "")
 case class RankingPropNoop() extends RankingProp("noop")
 
 // Time properties
-abstract class RankingPropIsTime(private val whatTime:String ) extends RankingProp("time", whatTime)
+abstract class RankingPropIsTime(private val whatTime: String) extends RankingProp("resetPeriod", whatTime)
+
 case class RankingPropIsEternal() extends RankingPropIsTime("eternal")
+
 case class RankingPropIsDaily() extends RankingPropIsTime("daily")
+
 case class RankingPropIsWeekly() extends RankingPropIsTime("weekly")
+
 case class RankingPropIsMonthly() extends RankingPropIsTime("monthly")
+
 case class RankingPropIsAnnual() extends RankingPropIsTime("annual")
 
 object RankingProp {
@@ -95,17 +137,19 @@ object RankingProp {
     isAnnual.value -> isAnnual
   )
 
-  def apply(prop:String, value:String):Option[RankingProp] = {
+  def apply(prop: String, value: String): Option[RankingProp] = {
 
-    for(p <- Option(prop);
-        v <- Option(value);
-        theProp <- resolveProp(p, v))
-      yield theProp
+    for (p <- Option(prop);
+         v <- Option(value);
+         theProp <- resolveProp(p, v))
+    yield theProp
   }
 
-  private def resolveProp(prop:String, value:String) = {
+  private def resolveProp(prop: String, value: String) = {
     mapTimeProps.get(Option(value).getOrElse("no-key").trim)
   }
+
+  def validProps = mapTimeProps.keys;
 
   def unapply(rp: RankingProp) = {
     Some(rp.prop, rp.value)
@@ -115,18 +159,18 @@ object RankingProp {
   implicit object RankingPropReads extends Reads[RankingProp] {
     override def reads(json: JsValue) = {
 
-      Try{
+      Try {
 
         ((json \ "prop").as[String], (json \ "value").as[String])
 
       } match {
-        case Success((p,v)) => {
+        case Success((p, v)) => {
           RankingProp(p, v) match {
             case Some(rp) => JsSuccess(rp)
             case _ => JsError(Seq(JsPath() -> Seq(ValidationError("plyrhub.error.non.valid.property"))))
           }
         }
-        case Failure(thrown) =>  JsError(Seq(JsPath() -> Seq(ValidationError("plyrhub.error.non.valid.property"))))
+        case Failure(thrown) => JsError(Seq(JsPath() -> Seq(ValidationError("plyrhub.error.non.valid.property"))))
       }
 
     }
@@ -136,10 +180,21 @@ object RankingProp {
 
 }
 
-case class Ranking(collections: Seq[RankingCollection], platforms: Seq[RankingPlatform], properties: Seq[RankingProp], status: State)
+case class Ranking(collections: Seq[RankingCollection], platforms: Seq[RankingPlatform], properties: Option[Seq[RankingProp]], status: State)
 
 object Ranking {
 
-  implicit val rankingFormat = Json.format[Ranking]
+  implicit val rankingReads: Reads[Ranking] = (
+    (__ \ "collections").read[Seq[RankingCollection]]
+      (minLength[Seq[RankingCollection]](rnkColsMin) keepAnd maxLength[Seq[RankingCollection]](rnkColsMax)) and
+      (__ \ "platforms").read[Seq[RankingPlatform]]
+        (minLength[Seq[RankingPlatform]](rnkPlatformsMin) keepAnd maxLength[Seq[RankingPlatform]](rnkPlatformsMax)) and
+      (__ \ "properties").readNullable[Seq[RankingProp]]
+        (maxLength[Seq[RankingProp]](rnkPropertiesMax)) and
+      (__ \ "status").read[State]
+    )(Ranking.apply _)
+
+
+  implicit val rankingWrites = Json.writes[Ranking]
 
 }

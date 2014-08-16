@@ -12,8 +12,8 @@
         "title": "Plyrhub API",
         "description": "The API for the Plyrhub Gamification Platform",
         "termsOfServiceUrl": "http://www.plyrhub.com/terms/pending",
-        "contact": "apiteam@wordnik.com",
-        "license": "GPLv3",
-        "licenseUrl": "https://www.gnu.org/licenses/gpl-3.0.html"
+        "contact": "plyrhub@19drops.com",
+        "license": "GNU AGPLv3",
+        "licenseUrl": "http://www.gnu.org/licenses/agpl-3.0.html"
     }
 }

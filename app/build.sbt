@@ -14,6 +14,11 @@ libraryDependencies ++= Seq(
   cache,
   ws,
   "com.livestream" %% "scredis" % "1.1.2",
+  "com.netflix.archaius" % "archaius-core" % "0.6.1",
+  "com.netflix.archaius" % "archaius-scala" % "0.6.1",
   "org.scalatest" % "scalatest_2.11" % "2.2.0" % "test"
 )
 
+addCommandAlias("my-idea", ";update-classifiers;update-sbt-classifiers;idea with-sources=yes")
+
+addCommandAlias("cc", ";clean;compile")

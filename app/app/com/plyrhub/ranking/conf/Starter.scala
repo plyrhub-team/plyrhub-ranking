@@ -2,9 +2,8 @@
  * Copyright (C) 2014  Enrique Aguilar Esnaola
  *
  *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU Affero General Public License as
- *     published by the Free Software Foundation (version 3 of the
- *     License).
+ *     it under the terms of the GNU Affero General Public License Version 3
+ *     as published by the Free Software Foundation.
  *
  *     This program is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,7 +16,7 @@
 
 package com.plyrhub.ranking.conf
 
-import com.plyrhub.api.codes.ParmCodes
+import com.plyrhub.api.codes.ApiParams
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.api.model._
 import com.plyrhub.api.model.StateNotActive
@@ -58,8 +57,8 @@ object DeltaConfigurer extends Configurer with Loggable {
   override def configure() = {
 
     // TODO: configure this through Archaius
-    val fromTop = Delta(ParmCodes.fromTop, 0, 100, 10)
-    val fromBottom = Delta(ParmCodes.fromBottom, 0, 100, 10)
+    val fromTop = Delta(ApiParams.fromTop, 0, 100, 10)
+    val fromBottom = Delta(ApiParams.fromBottom, 0, 100, 10)
 
     log.debug("Loading Delta (fromXXX) Cache")
     Delta.set(Map(fromTop.id->fromTop, fromBottom.id -> fromBottom))

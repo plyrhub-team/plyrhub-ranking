@@ -1,0 +1,72 @@
+{
+    "collections": [
+        {
+            "collection": "col1"
+        },
+        {
+            "collection": "col2"
+        },
+        {
+            "collection": "col3"
+        }
+    ],
+    "platforms": [
+        {
+            "platform": "desktop",
+            "names": [
+                {
+                    "lang": "es",
+                    "shortName": "rnk1",
+                    "longName": "long rnk1",
+                    "default": true,
+                    "status": "active"
+                }
+            ],
+            "default": true,
+            "status": "active"
+        },
+        {
+            "platform": "phone",
+            "names": [
+                {
+                    "lang": "es",
+                    "shortName": "rnk1",
+                    "longName": "long rnk1",
+                    "default": true,
+                    "status": "active"
+                }
+            ],
+            "default": true,
+            "status": "active"
+        },
+        {
+            "platform": "tablet",
+            "names": [
+                {
+                    "lang": "es",
+                    "shortName": "rnk1",
+                    "longName": "long rnk1",
+                    "default": true,
+                    "status": "active"
+                }
+            ],
+            "default": true,
+            "status": "active"
+        }
+    ],
+    "properties": [
+        {
+            "prop": "resetPeriod",
+            "value": "weekly"
+        },
+        {
+            "prop": "resetPeriod",
+            "value": "daily"
+        },
+        {
+            "prop": "resetPeriod",
+            "value": "weekly"
+        }
+    ],
+    "status": "active"
+}

@@ -150,10 +150,10 @@
             "path": "/rankings/{rnk}",
             "operations": [
                 {
-                    "method": "POST",
-                    "summary": "Creates a new ranking",
-                    "notes": "Creates a new ranking. If the ranking already exist it will be overwritten unless at least one member is registered. In this case the ranking should be modified through the PATCH method",
-                    "nickname": "rankingPost",
+                    "method": "PUT",
+                    "summary": "Generates a new ranking",
+                    "notes": "Generates a new ranking. If the ranking already exist it will be overwritten unless at least one member is registered. In this case the ranking should be modified through the PATCH method.<br/> TODO: link to extended documentation.",
+                    "nickname": "rankingPut",
                     "parameters": [
                         {
                             "name": "rnk",
@@ -935,8 +935,11 @@
             "id": "rankingData",
             "properties": {
                 "collection": {
-                    "type": "string",
-                    "description": "The id of the collection of the ranking",
+                    "items": {
+                        "$ref": "String"
+                    },
+                    "type": "Array",
+                    "description": "The collections the ranking belongs to",
                     "required": true
                 },
                 "properties": {

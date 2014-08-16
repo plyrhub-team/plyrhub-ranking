@@ -1,0 +1,30 @@
+{
+    "collections": [
+        {
+            "collection": "col0123456789"
+        }
+    ],
+    "platforms": [
+        {
+            "platform": "p01234567890",
+            "names": [
+                {
+                    "lang": "l0123456",
+                    "shortName": "sn01234567890",
+                    "longName": "ln01234567890123456",
+                    "default": true,
+                    "status": "active"
+                }
+            ],
+            "default": true,
+            "status": "active"
+        }
+    ],
+    "properties": [
+        {
+            "prop": "resetPeriod",
+            "value": "weekly"
+        }
+    ],
+    "status": "active"
+}

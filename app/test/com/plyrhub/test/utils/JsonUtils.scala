@@ -14,12 +14,33 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.core.store
+package com.plyrhub.test.utils
 
-import scredis.Redis
+import play.api.libs.json._
 
-trait RedisConfig {
+import scala.io.Source
 
-  lazy val redis = Redis()
+object JsonUtils {
+
+  def jsonFromFile(resource: String) = {
+
+    val in = getClass.getResourceAsStream(resource)
+
+    val source = Source.fromInputStream(in)
+    val lines = source.getLines().mkString
+    source.close()
+
+    Json.parse(lines)
+
+  }
+
+  def errToList(errorResult:JsResult[Any]):Seq[(String, Seq[String])] = {
+
+    val errJsError = errorResult.asInstanceOf[JsError]
+
+    errJsError.errors map {
+      case (path, errs) => path.toString() -> errs.map(_.message)
+    }
+  }
 
 }

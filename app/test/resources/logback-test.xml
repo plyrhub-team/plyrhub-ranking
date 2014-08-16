@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+    <!-- Colors in console -->
+    <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel" />
+
+    <appender name="FILE-PLYRHUB" class="ch.qos.logback.core.FileAppender">
+        <file>${application.home}/logs/application.log</file>
+        <encoder>
+            <pattern>%n%.-1level - [%date{ISO8601,GMT}] - [M][%mdc{userid}] - [T]%-40.40(%thread) - [L]%-25.25logger{15}: %message%xThrowable{5}</pattern>
+            <outputPatternAsHeader>true</outputPatternAsHeader>
+            <!--<immediateFlush>false</immediateFlush>-->
+        </encoder>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%coloredLevel %logger{15} - %message%n%xException{5}</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="play" level="INFO" />
+
+    <logger name="application" level="INFO" />
+
+    <logger name="com.plyrhub" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE-PLYRHUB" />
+    </root>
+
+</configuration>
