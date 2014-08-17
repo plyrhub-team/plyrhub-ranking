@@ -19,7 +19,14 @@ package com.plyrhub.ranking.service
 import akka.actor.{ActorRef, Actor}
 import com.plyrhub.core.context.OperationContext
 import com.plyrhub.core.protocol.{Complete, StartOperation}
+import com.plyrhub.core.store.mongo.JSONCollection
+import com.plyrhub.core.store.redis.RedisStore
+import com.plyrhub.ranking.model.Ranking
 import com.plyrhub.ranking.service.protocol.{CreateOrUpdateRankingMsg, RankingCreated}
+import com.plyrhub.core.store.mongo.MongoStore
+
+// TODO: Review Implicits
+import scala.concurrent.ExecutionContext.Implicits.global
 
 // TODO: review implicits
 
@@ -45,7 +52,17 @@ class RankingCreatorOrUpdater extends Actor {
         |\t
       """.stripMargin)
 
-    Complete(sender, RankingCreated(message.rnk))
+    // Saving data to Mongo
+
+    val db = MongoStore.db
+    def collection: JSONCollection = db.collection[JSONCollection]("rankings")
+
+    val ranking:Ranking = message.data
+
+    collection.insert(ranking).map(lastError =>
+      Complete(sender, RankingCreated(message.rnk))
+    )
+
   }
 
 

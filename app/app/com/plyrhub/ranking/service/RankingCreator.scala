@@ -20,9 +20,9 @@ import akka.actor.Actor
 import com.plyrhub.api.model.StateActive
 import com.plyrhub.core.context.OperationContext
 import com.plyrhub.core.protocol.{SimpleFailure, Complete, StartOperation}
+import com.plyrhub.core.store.redis.RedisStore
 import com.plyrhub.ranking.model.RankingName
 import com.plyrhub.ranking.service.protocol.{CreateRanking2, CreateRanking, RankingCreated}
-import com.plyrhub.core.store.RedisStore
 
 // TODO: review implicits
 import play.api.libs.concurrent.Execution.Implicits._

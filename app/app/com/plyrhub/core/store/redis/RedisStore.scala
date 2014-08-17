@@ -15,12 +15,13 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.core.store
+package com.plyrhub.core.store.redis
 
 object RedisStore extends RedisConfig {
 
   def storePosition(ranking:String, member:String, score:Long) = {
 
+    //import redis.dispatcher
     redis.zAdd(ranking, (member, score))
 
   }
