@@ -16,7 +16,7 @@
 
 package com.plyrhub.ranking.conf
 
-import com.plyrhub.api.codes.ApiParams
+import com.plyrhub.api.codes.ApiParams_ZZ
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.api.model._
 import com.plyrhub.api.model.StateNotActive
@@ -57,8 +57,8 @@ object DeltaConfigurer extends Configurer with Loggable {
   override def configure() = {
 
     // TODO: configure this through Archaius
-    val fromTop = Delta(ApiParams.fromTop, 0, 100, 10)
-    val fromBottom = Delta(ApiParams.fromBottom, 0, 100, 10)
+    val fromTop = Delta(ApiParams_ZZ.fromTop, 0, 100, 10)
+    val fromBottom = Delta(ApiParams_ZZ.fromBottom, 0, 100, 10)
 
     log.debug("Loading Delta (fromXXX) Cache")
     Delta.set(Map(fromTop.id->fromTop, fromBottom.id -> fromBottom))

@@ -21,36 +21,40 @@ import com.netflix.config.scala.DynamicIntProperty
 object RankingConfig {
 
   object ModelConstraints {
+
     // Ranking
-    val rnkColsMin = DynamicIntProperty("model.ranking.collections.min", 1).get
-    val rnkColsMax = DynamicIntProperty("model.ranking.collections.max", 5).get
+    def rnkIdMinLength = DynamicIntProperty("model.ranking.id.min.length",5).get
+    def rnkIdMaxLength = DynamicIntProperty("model.ranking.id.max.length",20).get
 
-    val rnkPlatformsMin = DynamicIntProperty("model.ranking.platforms.min", 1).get
-    val rnkPlatformsMax = DynamicIntProperty("model.ranking.platforms.max", 5).get
+    def rnkColsMin = DynamicIntProperty("model.ranking.collections.min", 1).get
+    def rnkColsMax = DynamicIntProperty("model.ranking.collections.max", 5).get
 
-    val rnkPropertiesMin = DynamicIntProperty("model.ranking.properties.min", 0).get
-    val rnkPropertiesMax = DynamicIntProperty("model.ranking.properties.max", 10).get
+    def rnkPlatformsMin = DynamicIntProperty("model.ranking.platforms.min", 1).get
+    def rnkPlatformsMax = DynamicIntProperty("model.ranking.platforms.max", 5).get
+
+    def rnkPropertiesMin = DynamicIntProperty("model.ranking.properties.min", 0).get
+    def rnkPropertiesMax = DynamicIntProperty("model.ranking.properties.max", 10).get
 
     // RankingCollection
-    val rnkCollectionsMinLength = DynamicIntProperty("model.ranking.collection.min.length", 3).get
-    val rnkCollectionsMaxLength = DynamicIntProperty("model.ranking.collection.max.length", 10).get
+    def rnkCollectionsMinLength = DynamicIntProperty("model.ranking.collection.min.length", 3).get
+    def rnkCollectionsMaxLength = DynamicIntProperty("model.ranking.collection.max.length", 10).get
 
     // RankingName
-    val rnkNameLangMinLength = DynamicIntProperty("model.rankingName.lang.min.lenght", 3).get
-    val rnkNameLangMaxLength = DynamicIntProperty("model.rankingName.lang.max.lenght", 5).get
+    def rnkNameLangMinLength = DynamicIntProperty("model.rankingName.lang.min.lenght", 3).get
+    def rnkNameLangMaxLength = DynamicIntProperty("model.rankingName.lang.max.lenght", 5).get
 
-    val rnkNameShortNameMinLength = DynamicIntProperty("model.rankingName.shortname.min.lenght", 3).get
-    val rnkNameShortNameMaxLength = DynamicIntProperty("model.rankingName.shortname.max.lenght", 5).get
+    def rnkNameShortNameMinLength = DynamicIntProperty("model.rankingName.shortname.min.lenght", 3).get
+    def rnkNameShortNameMaxLength = DynamicIntProperty("model.rankingName.shortname.max.lenght", 10).get
 
-    val rnkNameLongNameMinLength = DynamicIntProperty("model.rankingName.longname.min.lenght", 3).get
-    val rnkNameLongNameMaxLength = DynamicIntProperty("model.rankingName.longname.max.lenght", 5).get
+    def rnkNameLongNameMinLength = DynamicIntProperty("model.rankingName.longname.min.lenght", 5).get
+    def rnkNameLongNameMaxLength = DynamicIntProperty("model.rankingName.longname.max.lenght", 20).get
 
     // RankingPlatform
-    val rnkPlatformIdMin = DynamicIntProperty("model.rankingPlatform.platform.min.length", 5).get
-    val rnkPlatformIdMax = DynamicIntProperty("model.rankingPlatform.platform.max.length", 10).get
+    def rnkPlatformIdMin = DynamicIntProperty("model.rankingPlatform.platform.min.length", 5).get
+    def rnkPlatformIdMax = DynamicIntProperty("model.rankingPlatform.platform.max.length", 10).get
 
-    val rnkPlatformNamesMin = DynamicIntProperty("model.rankingPlatform.names.min", 1).get
-    val rnkPlatformNamesMax = DynamicIntProperty("model.rankingPlatform.names.max", 10).get
+    def rnkPlatformNamesMin = DynamicIntProperty("model.rankingPlatform.names.min", 1).get
+    def rnkPlatformNamesMax = DynamicIntProperty("model.rankingPlatform.names.max", 10).get
   }
 
 }

@@ -16,11 +16,45 @@
 
 package com.plyrhub.ranking.controller
 
+import com.plyrhub.api.request.ApiAction.DefaultAction
+import com.plyrhub.api.utils.ApiDefaults.ActionDefaults._
+import com.plyrhub.api.utils.HttpResults._
 import com.plyrhub.core.log.Loggable
-import play.api.mvc.Controller
+import com.plyrhub.core.protocol.ServiceSuccess
+import com.plyrhub.ranking.service.RankingCreatorOrUpdater
+import com.plyrhub.ranking.service.protocol.{RankingAlreadyWithMembers, CreateOrUpdateRankingMsg, RankingCreated, RankingUpdated}
+import play.api.mvc.{Controller, Result}
 
-object RankingController extends Controller with Loggable{
+object RankingController extends Controller with Loggable {
 
+
+  /*
+    Create or Update
+    Creates a new ranking
+    Overrides an existing ranking if it has no members
+   */
+  val createOrUpdateParams = Seq(RANKING_ID, BODY)
+
+  def createOrUpdate(rnk: String) =
+    AuthAction.async {
+
+      implicit request =>
+
+        val successBlock: PartialFunction[ServiceSuccess, Result] = {
+
+          case RankingCreated(rn: String) => API_SIMPLE_CREATED
+          case RankingUpdated(rn: String) => API_SIMPLE_SUCCESS
+          case RankingAlreadyWithMembers(rn: String) => API_RQ_PARAM_ERROR(Seq(ParamError(rn, "plyrhub.ranking.already.with.members")))
+
+        }
+
+        DefaultAction()
+          .withParams(createOrUpdateParams)
+          .withPathValues(RANKING_ID.seedMap(rnk))
+          .withSuccessBlock(successBlock)
+          .launch[CreateOrUpdateRankingMsg, RankingCreatorOrUpdater]
+
+    }
 
 
 }

@@ -3,6 +3,9 @@
 # ~~~~
 
 # Home page
-#POST        /rankings/:ranking/view3        com.plyrhub.ranking.controller.RankingController.view3(ranking:String)
-# Map static resources from the /public folder to the /assets URL path
+
+# Rankings
+PUT     /rankings/:ranking          com.plyrhub.ranking.controller.RankingController.createOrUpdate(ranking:String)
+
+
 GET         /assets/*file                   controllers.Assets.at(path="/public", file)

@@ -17,7 +17,7 @@
 
 package com.plyrhub.api.codes
 
-object ApiParams {
+object ApiParams_ZZ {
 
   val status = "status"
   val fromTop = "fromTop"

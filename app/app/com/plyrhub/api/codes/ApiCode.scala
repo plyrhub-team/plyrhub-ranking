@@ -24,6 +24,7 @@ class ApiCode(val httpCode: Int, val apiCode: String, val apiMessage: String)
 object ApiCode {
 
   val OK_CODE = ApiCode(Status.OK, "OK", "api.code.ok.success")
+  val CREATED_CODE = ApiCode(Status.CREATED, "OK", "api.code.created.success")
 
   val E400_GENERIC_ERROR_CODE = ApiCode(Status.BAD_REQUEST, "E400-GENERIC-ERROR", "api.code.e400.generic.error")
   val E400_PARAM_ERROR_CODE = ApiCode(Status.BAD_REQUEST, "E400-PARAM-ERROR", "api.code.e400.param.error")

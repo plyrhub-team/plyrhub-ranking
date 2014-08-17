@@ -26,12 +26,16 @@ import play.api.mvc.Results._
 object HttpResults extends Loggable {
 
   val API_SIMPLE_SUCCESS = Ok("")
+  val API_SIMPLE_CREATED = Created("")
 
-  def API_SUCCESS[T](data:Option[T], pagination:Option[Pagination])(implicit writes:Writes[T]) =
+  def API_SUCCESS[T](data: Option[T], pagination: Option[Pagination] = None)(implicit writes: Writes[T]) =
     ApiSuccessResponse[T](Ok, ApiCode.OK_CODE, data, pagination)
 
+  def API_CREATED[T](data: Option[T], pagination: Option[Pagination] = None)(implicit writes: Writes[T]) =
+    ApiSuccessResponse[T](Created, ApiCode.CREATED_CODE, data, pagination)
 
-  private[this] def ApiSuccessResponse[T](playStatus: Status, code: ApiCode, data: Option[T], pagination: Option[Pagination])(implicit writes:Writes[T]) = {
+
+  private[this] def ApiSuccessResponse[T](playStatus: Status, code: ApiCode, data: Option[T], pagination: Option[Pagination])(implicit writes: Writes[T]) = {
 
     data.fold({
       playStatus("")

@@ -39,7 +39,8 @@ object ApiDefaults {
   object ActionDefaults{
 
     // Usual Params
-    val RANKING = Param[P, String]("ranking")
+    val RANKING_ID = Param[P, String]("ranking")
+    val BODY = Param[B, B]("data")
     val FROM_TOP = Param[Q, Int]("fromTop", 5)
     val FROM_BOTTOM = Param[Q, Int]("fromBottom", 5)
     val STATE_TRUE = Param[H, Boolean]("state", true)

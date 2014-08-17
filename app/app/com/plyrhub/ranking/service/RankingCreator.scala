@@ -29,7 +29,8 @@ import play.api.libs.concurrent.Execution.Implicits._
 
 class RankingCreator extends Actor {
 
-  override def receive = {
+
+/*  override def receive = {
     case StartOperation(ctx: OperationContext, message: CreateRanking) =>
       println("telling everything is done")
 
@@ -61,6 +62,6 @@ class RankingCreator extends Actor {
 
       //sender ! OperationCompleted(Right(SimpleSuccess()))
       //sender ! Complete(RankingCreated(RankingName("es", "ss", "ll", true, StateActive())))
-  }
-
+  }*/
+  override def receive = ???
 }

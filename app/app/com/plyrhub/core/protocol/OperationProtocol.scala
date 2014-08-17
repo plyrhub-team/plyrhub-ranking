@@ -16,6 +16,7 @@
 
 package com.plyrhub.core.protocol
 
+import akka.actor.ActorRef
 import com.plyrhub.core.context.ApiOperationContext
 
 trait ServiceMessage
@@ -37,9 +38,9 @@ case class OperationCompleted(result: Either[ServiceFailure, ServiceSuccess]) ex
 
 object Complete {
 
-  def apply(response: ServiceResponse) = response match {
-    case success: ServiceSuccess => OperationCompleted(Right(success))
-    case failure: ServiceFailure => OperationCompleted(Left(failure))
+  def apply(sendTo:ActorRef, response: ServiceResponse) = response match {
+    case success: ServiceSuccess => sendTo ! OperationCompleted(Right(success))
+    case failure: ServiceFailure => sendTo ! OperationCompleted(Left(failure))
   }
 
 }

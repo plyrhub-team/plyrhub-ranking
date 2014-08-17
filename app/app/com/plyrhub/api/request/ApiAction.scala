@@ -33,10 +33,13 @@ import scala.reflect.ClassTag
 
 object ApiAction extends Loggable {
 
-  type apiActionRequestType = UserRequest[AnyContent]
-  type paramsType = Seq[Param[ParamOrigin, Any, Presence]]
-  type pathValuesType = apiActionRequestType => Map[String, Any]
+  object CustomTypes {
+    type apiActionRequestType = UserRequest[AnyContent]
+    type paramsType = Seq[Param[ParamOrigin, Any, Presence]]
+    type pathValuesType = apiActionRequestType => Map[String, Any]
+  }
 
+  import CustomTypes._
 
   class DefaultAction(val request: apiActionRequestType, val params: paramsType = Seq(), val pathValues: pathValuesType = request => Map(), val successBlock: successBlockType = onSuccessDefault) {
 
@@ -104,7 +107,9 @@ object ApiAction extends Loggable {
   }
 
   val apiConverterErrorMap = Map(
-    "error.path.missing" -> "plyrhub.p.converter.missing.value"
+    "error.path.missing" -> "plyrhub.p.converter.missing.value",
+    "error.maxLength" -> "plyrhub.p.converter.maxLength",
+    "error.minLength" -> "plyrhub.p.converter.minLength"
   )
 
   def extractParameters[P](implicit request: apiActionRequestType, pathValue: Map[String, Any], params: Seq[Param[ParamOrigin, Any, Presence]], paramsReads: Reads[P] = null, classTagP: ClassTag[P]): Either[Seq[ParamError], P] = {
