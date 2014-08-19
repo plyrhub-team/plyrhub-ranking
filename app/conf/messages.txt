@@ -21,4 +21,4 @@ plyrhub.non.expected.authorization.error
 
 # RankingController
 # createOrUpdate
-plyrhub.ranking.already.with.members
+plyrhub.ranking.already.exists

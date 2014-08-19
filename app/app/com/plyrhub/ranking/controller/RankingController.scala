@@ -22,7 +22,7 @@ import com.plyrhub.api.utils.HttpResults._
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.core.protocol.ServiceSuccess
 import com.plyrhub.ranking.service.RankingCreatorOrUpdater
-import com.plyrhub.ranking.service.protocol.{RankingAlreadyWithMembers, CreateOrUpdateRankingMsg, RankingCreated, RankingUpdated}
+import com.plyrhub.ranking.service.protocol.{RankingAlreadyExist, CreateOrUpdateRankingMsg, RankingCreated, RankingUpdated}
 import play.api.mvc.{Controller, Result}
 
 object RankingController extends Controller with Loggable {
@@ -44,7 +44,7 @@ object RankingController extends Controller with Loggable {
 
           case RankingCreated(rn: String) => API_SIMPLE_CREATED
           case RankingUpdated(rn: String) => API_SIMPLE_SUCCESS
-          case RankingAlreadyWithMembers(rn: String) => API_RQ_PARAM_ERROR(Seq(ParamError(rn, "plyrhub.ranking.already.with.members")))
+          case RankingAlreadyExist(rn: String) => API_RQ_PARAM_ERROR(Seq(ParamError(rn, "plyrhub.ranking.already.exists")))
 
         }
 

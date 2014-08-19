@@ -24,6 +24,6 @@ trait MongoConfig {
 
   lazy val driver = new MongoDriver
   lazy val connection = driver.connection(List("localhost"))
-  lazy val db = DB("plyrhub", connection)
+  lazy val mongoDB = DB("plyrhub", connection)
 
 }

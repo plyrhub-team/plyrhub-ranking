@@ -18,9 +18,22 @@ package com.plyrhub.core.context
 
 import com.plyrhub.core.model.Lang
 
+import scala.util.Try
+
 sealed trait ApiOwner
 
 case class Owner(id:String) extends ApiOwner
+object Owner {
+  def apply(apiOwner:ApiOwner):Option[String] = {
+    Try {
+      val owner = apiOwner.asInstanceOf[Owner]
+      Some(owner.id)
+    }.getOrElse{
+      None
+    }
+  }
+}
+
 case class NoOwner() extends ApiOwner
 case class NotAllowedOwner() extends ApiOwner
 

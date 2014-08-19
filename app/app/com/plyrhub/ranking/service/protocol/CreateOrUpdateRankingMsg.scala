@@ -41,4 +41,6 @@ case class RankingCreated(rnk: String) extends ServiceSuccess
 
 case class RankingUpdated(rnk: String) extends ServiceSuccess
 
-case class RankingAlreadyWithMembers(rnk: String) extends ServiceSuccess
+case class RankingAlreadyExist(rnk: String) extends ServiceSuccess
+
+case class RankingGenericError(rnk:String) extends ServiceSuccess

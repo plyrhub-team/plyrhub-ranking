@@ -16,16 +16,16 @@
 
 package com.plyrhub.ranking.service
 
-import akka.actor.{ActorRef, Actor}
-import com.plyrhub.core.context.OperationContext
-import com.plyrhub.core.protocol.{Complete, StartOperation}
-import com.plyrhub.core.store.mongo.JSONCollection
-import com.plyrhub.core.store.redis.RedisStore
-import com.plyrhub.ranking.model.Ranking
-import com.plyrhub.ranking.service.protocol.{CreateOrUpdateRankingMsg, RankingCreated}
-import com.plyrhub.core.store.mongo.MongoStore
+import akka.actor.{Actor, ActorRef}
+import com.plyrhub.core.context.{OperationContext, Owner}
+import com.plyrhub.core.protocol.{Complete, ServiceSuccess, SimpleFailure, StartOperation}
+import RankingRepo
+import com.plyrhub.ranking.service.protocol.{CreateOrUpdateRankingMsg, RankingAlreadyExist, RankingCreated, RankingGenericError}
+
+import scala.concurrent.Future
 
 // TODO: Review Implicits
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 // TODO: review implicits
@@ -42,28 +42,25 @@ class RankingCreatorOrUpdater extends Actor {
 
   def startOperation(sender: ActorRef, ctx: OperationContext, message: CreateOrUpdateRankingMsg) = {
 
-    println("Ranking Creation Requets Received...")
-    println(
-      """
-        |Actions to do:\n
-        |\t Save the ranking to MongoDB
-        |\t\t Check it is possible to create the ranking: the raning does not exist OR exists but has NO MEMBERS
-        |\t Save the "score" to Redis
-        |\t
-      """.stripMargin)
-
     // Saving data to Mongo
+    val fCreateOnMongo = RankingRepo.createRanking(Owner(ctx.owner).get, message.rnk, message.data)
+    val fStoreNoUser = RankingRepo.storePosition(message.rnk, "no-member", 0)
 
-    val db = MongoStore.db
-    def collection: JSONCollection = db.collection[JSONCollection]("rankings")
+    def fResult(result: ServiceSuccess, elements: Long) = Future {
+      result match {
+        case r @ (RankingCreated(_) | RankingAlreadyExist(_)) => r
+        case r @ RankingGenericError(ranking) => // sento fixer!!!!!!
+        case _ => SimpleFailure()
+      }
+    }
 
-    val ranking:Ranking = message.data
+    val fServiceResult = for {
+      lastError <- fCreateOnMongo
+      elements <- fStoreNoUser
+      result <- fResult(lastError, elements)
+    } yield result
 
-    collection.insert(ranking).map(lastError =>
-      Complete(sender, RankingCreated(message.rnk))
-    )
+    fServiceResult.map(Complete(sender, _))
 
   }
-
-
 }

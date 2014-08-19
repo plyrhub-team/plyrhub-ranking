@@ -47,7 +47,7 @@ object ApiOperationDefaults {
 
 import com.plyrhub.api.request.ApiOperationDefaults._
 
-trait ApiOperation {
+trait ApiOperation extends Loggable {
 
   val onInitBlock: initBlockType
   val onSuccessBlock: successBlockType
@@ -64,7 +64,7 @@ trait ApiOperation {
     f
       .map {
       r =>
-        r.fold(_ => API_GENERIC_ERROR(Seq("plyrhub.generic.error")), s => doResult(s))
+        r.fold(_ => API_GENERIC_ERROR(Seq("plyrhub.generic.error")), s => doUserResultOrDefaultManagement(s))
     }
       // Unexpected exception, already logged in the "supervisory-strategy"
       .recover {
@@ -73,9 +73,14 @@ trait ApiOperation {
 
   }
 
-  lazy val doResult = onSuccessBlock orElse doFailure
-  val doFailure: successBlockType = {
-    case _ => API_GENERIC_ERROR(Seq("plyrhub.generic.error"))
+  lazy val doUserResultOrDefaultManagement = onSuccessBlock orElse doDefaultSuccessManagement
+
+  val doDefaultSuccessManagement: successBlockType = {
+    case notManaged => 
+      // You have received a ServiceSuccess but you are not managing it in your onSuccessBlock
+      // TODO: add more info and add a Metric
+      log.error(s"Message from ServiceActor not managed: ${notManaged.getClass.getCanonicalName}")
+      API_GENERIC_ERROR(Seq("plyrhub.generic.error"))
   }
 
 }
