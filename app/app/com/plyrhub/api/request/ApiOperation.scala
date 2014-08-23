@@ -20,9 +20,11 @@ import akka.actor.SupervisorStrategy.Stop
 import akka.actor.{Actor, ActorRef, OneForOneStrategy, Props}
 import com.plyrhub.api.utils.HttpResults._
 import com.plyrhub.api.utils.{ApiDefaults, Utils}
+import com.plyrhub.core.Plyrhub
 import com.plyrhub.core.context.{ApiOperationContext, OperationContext}
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.core.protocol._
+import play.api.i18n.{Lang => PlayLang}
 import play.api.mvc.Result
 
 import scala.concurrent.ExecutionContext.Implicits._
@@ -61,14 +63,16 @@ trait ApiOperation extends Loggable {
 
     val f = ApiRequestActor[S](onInitBlock, octx, message)
 
+    implicit val lang = PlayLang(octx.lang.language, octx.lang.country)
+
     f
       .map {
       r =>
-        r.fold(_ => API_GENERIC_ERROR(Seq("plyrhub.generic.error")), s => doUserResultOrDefaultManagement(s))
+        r.fold(_ => ApiGenericError(Seq("plyrhub.generic.error")), s => doUserResultOrDefaultManagement(s))
     }
       // Unexpected exception, already logged in the "supervisory-strategy"
       .recover {
-      case _ => API_GENERIC_ERROR(Seq("plyrhub.generic.error"))
+      case _ => ApiGenericError(Seq("plyrhub.generic.error"))
     }
 
   }
@@ -80,7 +84,7 @@ trait ApiOperation extends Loggable {
       // You have received a ServiceSuccess but you are not managing it in your onSuccessBlock
       // TODO: add more info and add a Metric
       log.error(s"Message from ServiceActor not managed: ${notManaged.getClass.getCanonicalName}")
-      API_GENERIC_ERROR(Seq("plyrhub.generic.error"))
+      ApiGenericError(Seq("plyrhub.generic.error"))
   }
 
 }
@@ -142,11 +146,12 @@ object ApiRequestActor {
 
   def apply[S <: Actor : ClassTag](init: initBlockType, octx: OperationContext, message: ServiceMessage): Future[Either[ServiceFailure, ServiceSuccess]] = {
 
+    // Prepare the ServiceActor
     val targetProps = Props(implicitly[ClassTag[S]].runtimeClass)
 
     val p = Promise[Either[ServiceFailure, ServiceSuccess]]
 
-    ApiDefaults.defaultActorSystem.actorOf(Props(classOf[ApiRequestActor], targetProps, init, octx, message, p))
+    Plyrhub.actorSystem.actorOf(Props(classOf[ApiRequestActor], targetProps, init, octx, message, p))
 
     p.future
 

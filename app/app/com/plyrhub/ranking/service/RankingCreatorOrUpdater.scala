@@ -16,10 +16,9 @@
 
 package com.plyrhub.ranking.service
 
-import akka.actor.{Actor, ActorRef}
+import akka.actor.{Actor, ActorLogging, ActorRef}
 import com.plyrhub.core.context.{OperationContext, Owner}
-import com.plyrhub.core.protocol.{Complete, ServiceSuccess, SimpleFailure, StartOperation}
-import RankingRepo
+import com.plyrhub.core.protocol._
 import com.plyrhub.ranking.service.protocol.{CreateOrUpdateRankingMsg, RankingAlreadyExist, RankingCreated, RankingGenericError}
 
 import scala.concurrent.Future
@@ -30,7 +29,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 // TODO: review implicits
 
-class RankingCreatorOrUpdater extends Actor {
+class RankingCreatorOrUpdater extends Actor with ActorLogging {
 
   override def receive = {
 
@@ -48,18 +47,21 @@ class RankingCreatorOrUpdater extends Actor {
 
     def fResult(result: ServiceSuccess, elements: Long) = Future {
       result match {
-        case r @ (RankingCreated(_) | RankingAlreadyExist(_)) => r
-        case r @ RankingGenericError(ranking) => // sento fixer!!!!!!
+        case r @ (RankingCreated(_) | RankingAlreadyExist(_)) => r  // send to MisterWolf !!!!
+        case r @ RankingGenericError(ranking) => SimpleFailure()    // send to MisterWolf !!!!
         case _ => SimpleFailure()
       }
+
     }
 
+    // Combine
     val fServiceResult = for {
       lastError <- fCreateOnMongo
       elements <- fStoreNoUser
       result <- fResult(lastError, elements)
     } yield result
 
+    // Return
     fServiceResult.map(Complete(sender, _))
 
   }

@@ -18,7 +18,6 @@ package com.plyrhub.api.request
 
 import akka.actor.Actor
 import com.plyrhub.api.request.ApiOperationDefaults._
-import com.plyrhub.api.utils.ApiDefaults.i18nDefaults._
 import com.plyrhub.api.utils.HttpResults._
 import com.plyrhub.core.context._
 import com.plyrhub.core.log.Loggable
@@ -39,26 +38,26 @@ object ApiAction extends Loggable {
     type pathValuesType = apiActionRequestType => Map[String, Any]
   }
 
-  import CustomTypes._
+  import com.plyrhub.api.request.ApiAction.CustomTypes._
 
-  class DefaultAction(val request: apiActionRequestType, val params: paramsType = Seq(), val pathValues: pathValuesType = request => Map(), val successBlock: successBlockType = onSuccessDefault) {
+  class DefaultAction(val request: apiActionRequestType, val lang:PlayLang, val params: paramsType = Seq(), val pathValues: pathValuesType = request => Map(), val successBlock: successBlockType = onSuccessDefault) {
 
-    def withParams(newParams: paramsType) = new DefaultAction(request, newParams, pathValues, successBlock)
+    def withParams(newParams: paramsType) = new DefaultAction(request, lang, newParams, pathValues, successBlock)
 
-    def withPathValues(newPathValues: pathValuesType) = new DefaultAction(request, params, newPathValues, successBlock)
+    def withPathValues(newPathValues: pathValuesType) = new DefaultAction(request, lang, params, newPathValues, successBlock)
 
-    def withSuccessBlock(newSuccessBlock: successBlockType) = new DefaultAction(request, params, pathValues, newSuccessBlock)
+    def withSuccessBlock(newSuccessBlock: successBlockType) = new DefaultAction(request, lang, params, pathValues, newSuccessBlock)
 
     def launch[P <: ServiceMessage, S <: Actor](implicit paramsReads: Reads[P] = null, classTagS: ClassTag[S], classTagP: ClassTag[P]) =
-      defaultApiAction[P, S](params)(pathValues)(successBlock)(request)
+      defaultApiAction[P, S](params)(pathValues)(successBlock)(request)(lang)
 
   }
 
   object DefaultAction {
 
-    def apply[P <: ServiceMessage, S <: Actor]()(implicit request: apiActionRequestType) = new DefaultAction(request)
+    def apply[P <: ServiceMessage, S <: Actor]()(implicit request: apiActionRequestType, lang:PlayLang) = new DefaultAction(request, lang)
 
-    def apply[P <: ServiceMessage, S <: Actor](params: paramsType, pathValues: pathValuesType)(implicit request: apiActionRequestType, paramsReads: Reads[P] = null, classTagS: ClassTag[S], classTagP: ClassTag[P]) = new DefaultAction(request, params, pathValues, onSuccessDefault).launch[P, S]
+    def apply[P <: ServiceMessage, S <: Actor](params: paramsType, pathValues: pathValuesType)(implicit request: apiActionRequestType, lang:PlayLang, paramsReads: Reads[P] = null, classTagS: ClassTag[S], classTagP: ClassTag[P]) = new DefaultAction(request, lang, params, pathValues, onSuccessDefault).launch[P, S]
 
   }
 
@@ -68,10 +67,12 @@ object ApiAction extends Loggable {
   (pathValues: pathValuesType)
   (successBlock: successBlockType)
   (request: apiActionRequestType)
+  (lang: PlayLang)
   (implicit paramsReads: Reads[P] = null, classTagS: ClassTag[S], classTagP: ClassTag[P]) = {
 
     // Extract Parameters
     implicit val rqRequest = request
+    implicit val rqLang = lang
     implicit val rqParams = params
     implicit val rqValues = pathValues(request)
 
@@ -80,8 +81,8 @@ object ApiAction extends Loggable {
 
   }
 
-  def errorOnParameters(parms: Seq[ParamError]): Future[Result] = {
-    Future.successful(API_RQ_PARAM_ERROR(parms))
+  def errorOnParameters(parms: Seq[ParamError])(implicit lang:PlayLang): Future[Result] = {
+    Future.successful(ApiRqParamError(parms))
   }
 
   def processRequest[S <: Actor]
@@ -94,16 +95,13 @@ object ApiAction extends Loggable {
 
   }
 
-  def buildOperationContext(implicit request: apiActionRequestType) = {
+  def buildOperationContext(implicit request: apiActionRequestType, lang:PlayLang) = {
 
     // TODO: put his better
     // by now assume it is a UserRequest
     val urq = UserRequest.convert(request).get
 
-    val lang = request.acceptLanguages.headOption.fold(defaultLang)(l => Lang(l.language, l.country))
-
-    OperationContext(urq.owner, urq.user, lang)
-
+    OperationContext(urq.owner, urq.user, Lang(lang.code, lang.country))
   }
 
   val apiConverterErrorMap = Map(
@@ -163,7 +161,7 @@ object ApiAction extends Loggable {
   def getUndefinedErrors(undefined: Seq[(String, JsValue)]): Seq[ParamError] = {
 
     def getErrorFromUndefined(v: JsValue) = {
-      v match {
+      (v: @unchecked) match {
         case u: JsUndefined => u.error
       }
     }

@@ -43,5 +43,6 @@ object Complete {
     case failure: ServiceFailure => sendTo ! OperationCompleted(Left(failure))
   }
 
+
 }
 

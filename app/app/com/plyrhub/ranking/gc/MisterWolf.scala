@@ -14,10 +14,10 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com
+package com.plyrhub.ranking.gc
 
-package object plyrhub {
+import akka.actor.{Actor, ActorLogging}
 
-
-
+class MisterWolf extends Actor with ActorLogging{
+  override def receive = ???
 }

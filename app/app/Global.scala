@@ -16,7 +16,6 @@
 
 import java.io.File
 
-import com.netflix.config.{DynamicPropertyFactory, ConfigurationManager}
 import com.plyrhub.api.utils.HttpResults._
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.ranking.conf.Starter
@@ -33,15 +32,6 @@ object Global extends GlobalSettings with Loggable {
     // warm-up application
     log.debug("Warming up app ...")
     Starter.warmup()
-
-    val r = ConfigurationManager.isConfigurationInstalled
-
-    //ConfigurationManager.loadPropertiesFromResources("config.properties")
-
-    val r1 = ConfigurationManager.isConfigurationInstalled
-
-    val uno = DynamicPropertyFactory.getInstance().getStringProperty("archaius.first", "")
-
 
     // do the default behaviour
     super.onStart(app)

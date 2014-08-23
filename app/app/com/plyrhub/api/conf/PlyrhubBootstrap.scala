@@ -14,10 +14,25 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com
+package com.plyrhub.api.conf
 
-package object plyrhub {
+import com.plyrhub.core.Plyrhub
+import play.Plugin
+import play.api.Application
+import play.api.libs.concurrent.Akka
 
+import play.api.Play.current
 
+class PlyrhubBootstrap(app: Application) extends Plugin {
+
+  override def onStart() = {
+
+    startupAkkaSystemForPlyrhub
+
+  }
+
+  def startupAkkaSystemForPlyrhub = {
+    Plyrhub.installRuntime(Akka.system)
+  }
 
 }

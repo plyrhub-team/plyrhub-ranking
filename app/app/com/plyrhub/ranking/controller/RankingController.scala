@@ -22,7 +22,7 @@ import com.plyrhub.api.utils.HttpResults._
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.core.protocol.ServiceSuccess
 import com.plyrhub.ranking.service.RankingCreatorOrUpdater
-import com.plyrhub.ranking.service.protocol.{RankingAlreadyExist, CreateOrUpdateRankingMsg, RankingCreated, RankingUpdated}
+import com.plyrhub.ranking.service.protocol.{CreateOrUpdateRankingMsg, RankingAlreadyExist, RankingCreated, RankingUpdated}
 import play.api.mvc.{Controller, Result}
 
 object RankingController extends Controller with Loggable {
@@ -36,6 +36,7 @@ object RankingController extends Controller with Loggable {
   val createOrUpdateParams = Seq(RANKING_ID, BODY)
 
   def createOrUpdate(rnk: String) =
+
     AuthAction.async {
 
       implicit request =>
@@ -44,7 +45,7 @@ object RankingController extends Controller with Loggable {
 
           case RankingCreated(rn: String) => API_SIMPLE_CREATED
           case RankingUpdated(rn: String) => API_SIMPLE_SUCCESS
-          case RankingAlreadyExist(rn: String) => API_RQ_PARAM_ERROR(Seq(ParamError(rn, "plyrhub.ranking.already.exists")))
+          case RankingAlreadyExist(rn: String) => ApiRqParamError(Seq(ParamError(rn, "plyrhub.ranking.already.exists")))
 
         }
 
@@ -55,6 +56,5 @@ object RankingController extends Controller with Loggable {
           .launch[CreateOrUpdateRankingMsg, RankingCreatorOrUpdater]
 
     }
-
 
 }

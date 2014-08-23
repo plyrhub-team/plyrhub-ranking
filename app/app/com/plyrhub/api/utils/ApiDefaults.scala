@@ -27,8 +27,6 @@ import scala.concurrent.Future
 
 object ApiDefaults {
 
-  lazy val defaultActorSystem = Akka.system
-
   object i18nDefaults{
 
     // Default Language

@@ -1,0 +1,44 @@
+
+#
+# Copyright (C) 2014  Enrique Aguilar Esnaola
+#
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Affero General Public License Version 3
+#     as published by the Free Software Foundation.
+#
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Affero General Public License for more details.
+#
+#     You should have received a copy of the GNU Affero General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+plyrhub.generic.error = error no esperado
+plyrhub.non.valid.body = body no válido.Posibles causas mensaje mal formado o Content-Type no correcto
+
+plyrhub.p.converter.non.valid.value = valor no válido
+plyrhub.p.converter.non.valid.body.value = Body no válido.Posibles causas mensaje mal formado o Content-Type no correcto
+plyrhub.p.converter.non.valid.type = tipo no soportado en conversores de parámetros
+# error.path.missing <-- plyrhub.p.converter.missing.value
+plyrhub.p.converter.missing.value = valor no encontrado
+# error.maxLength <-- plyrhub.p.converter.maxLength
+plyrhub.p.converter.maxLength = longitud máxima admitida superada
+# error.minLength <-- plyrhub.p.converter.minLength 
+plyrhub.p.converter.minLength = longitud mínima admitida no alcanzada 
+plyrhub.p.converter.mandatory.value.not.provided = valor requerido no proporcionado (si se está enviando->revisar el 'Content-Type')
+
+# Ranking Model specific
+plyrhub.error.non.valid.collection.length = se indicó un número mayor de colecciones que el permitido 
+plyrhub.error.non.valid.collection = la coleccion indicada no es válida
+
+plyrhub.not.authorized.owner = petición no autorizada (owner)
+plyrhub.owner.authorization.generic.error = error no esperado en la autorización del owner
+plyrhub.not.authorized.user = petición no autorizada (usuario)
+plyrhub.user.authorization.generic.error = error no esperado en la autorización del usuario
+plyrhub.non.expected.authorization.error = error en la autorización
+
+# RankingController
+# createOrUpdate
+plyrhub.ranking.already.exists = el ranking ya existe

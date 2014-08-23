@@ -14,10 +14,20 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com
+package com.plyrhub.core
 
-package object plyrhub {
+import akka.actor.ActorSystem
+import com.plyrhub.core.log.Loggable
 
+object Plyrhub extends Loggable {
 
+  private[core] var _currentActorSystem: ActorSystem = _
 
+  def installRuntime(actorSystem: ActorSystem) = {
+
+    _currentActorSystem = actorSystem
+
+  }
+
+  def actorSystem:ActorSystem = Option(_currentActorSystem).getOrElse(sys.error("PLYRHUB RUNTIME NO INITIALIZED!!!"))
 }

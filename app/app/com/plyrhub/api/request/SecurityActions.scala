@@ -19,6 +19,7 @@ package com.plyrhub.api.request
 import com.plyrhub.api.utils.HttpResults._
 import com.plyrhub.core.context._
 import com.plyrhub.core.log.Loggable
+import play.api.i18n.Lang
 import play.api.mvc._
 
 import scala.concurrent.Future
@@ -26,25 +27,32 @@ import scala.concurrent.ExecutionContext.Implicits._
 
 // TODO: review "Execution.Implicits._"
 
-class SecurityActions {
+object SecurityActions {
+
+  def requestLang[A](implicit lang:Lang) = lang
 
 }
+
+import com.plyrhub.api.request.SecurityActions._
 
 case class OwnerRequest[A](owner: Owner, request: Request[A]) extends WrappedRequest[A](request)
 
 class OwnerIdentificationBuilder(ownerInfo: RequestHeader => Future[ApiOwner]) extends ActionBuilder[OwnerRequest] with Loggable {
 
-  override def invokeBlock[A](request: Request[A], block: (OwnerRequest[A]) => Future[Result]) = identify(request, block)
+  override def invokeBlock[A](request: Request[A], block: (OwnerRequest[A]) => Future[Result]) = identify(block)(request)
 
-  def identify[A](request: Request[A], block: (OwnerRequest[A]) => Future[Result]) = {
+  def identify[A](block: (OwnerRequest[A]) => Future[Result])(implicit request: Request[A]) = {
+
+    // TODO: review, at this time the language seems not to be calculated yet
+    implicit val lang = requestLang
 
     ownerInfo(request).flatMap {
-      case o: NotAllowedOwner => Future.successful(API_UNAUTHORIZED_ERROR(Seq("plyrhub.not.authorized.owner")))
+      case o: NotAllowedOwner => Future.successful(ApiUnauthorizedError(Seq("plyrhub.not.authorized.owner")))
       case o: Owner => block(new OwnerRequest(o, request))
-      case x: ApiOwner => {
+      case x => {
         // This should never happen ... but who knows
         log.error(s"A non expected value was received during owner authorization: ${x.toString}")
-        Future.successful(API_UNAUTHORIZED_ERROR(Seq("plyrhub.owner.authorization.generic.error")))
+        Future.successful(ApiUnauthorizedError(Seq("plyrhub.owner.authorization.generic.error")))
       }
     }
   }
@@ -69,25 +77,26 @@ object UserRequest {
 
 class UserIdentificationBuilder(userInfo: RequestHeader => Future[ApiUser]) extends ActionBuilder[UserRequest] with Loggable {
 
-  override def invokeBlock[A](request: Request[A], block: (UserRequest[A]) => Future[Result]) = identify(request, block)
+  override def invokeBlock[A](request: Request[A], block: (UserRequest[A]) => Future[Result]) = identify(block)(request)
 
-  def identify[A](request: Request[A], block: (UserRequest[A]) => Future[Result]) = {
+  def identify[A](block: (UserRequest[A]) => Future[Result])(implicit request: Request[A]) = {
 
     val owner = extractOwner(request)
 
-    owner
-      .map(owner =>
-      userInfo(request).flatMap {
-        case u: NotAllowedUser => Future.successful(API_UNAUTHORIZED_ERROR(Seq("plyrhub.not.authorized.user")))
-        case u: User => block(new UserRequest(u, owner, request))
-        case x: ApiUser => {
-          // This should never happen ... but who knows
-          log.error(s"A non expected value was received during user authorization: ${x.toString}")
-          Future.successful(API_UNAUTHORIZED_ERROR(Seq("plyrhub.user.authorization.generic.error")))
-        }
+    // TODO: review, at this time the language seems not to be calculated yet
+    implicit val lang = requestLang
+
+    owner.map(owner => userInfo(request).flatMap {
+
+      case u: NotAllowedUser => Future.successful(ApiUnauthorizedError(Seq("plyrhub.not.authorized.user")))
+      case u: User => block(new UserRequest(u, owner, request))
+      case x => {
+        // This should never happen ... but who knows
+        log.error(s"A non expected value was received during user authorization: ${x.toString}")
+        Future.successful(ApiUnauthorizedError(Seq("plyrhub.user.authorization.generic.error")))
       }
-      )
-      .getOrElse(Future.successful(API_GENERIC_ERROR(Seq("plyrhub.non.expected.authorization.error"))))
+    }
+    ).getOrElse(Future.successful(ApiGenericError(Seq("plyrhub.non.expected.authorization.error"))))
 
   }
 

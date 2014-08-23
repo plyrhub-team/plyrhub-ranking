@@ -20,6 +20,8 @@ import com.plyrhub.api.codes.ApiCode
 import com.plyrhub.api.model.Response._
 import com.plyrhub.api.model.{Data, Pagination, Response, Result}
 import com.plyrhub.core.log.Loggable
+import play.api.i18n.{Messages, Lang}
+import play.api.i18n.Messages.Message
 import play.api.libs.json.{Writes, Json}
 import play.api.mvc.Results._
 
@@ -65,8 +67,8 @@ object HttpResults extends Loggable {
     "Invalid Json" -> "plyrhub.non.valid.body"
   )
 
-  val API_RQ_PARAM_ERROR = (errors: Seq[ParamError]) => {
-    ApiErrorResponse(BadRequest, ApiCode.E400_PARAM_ERROR_CODE, errors.map(e => s"${e.name} ... ${e.msg}"))
+  def ApiRqParamError(errors: Seq[ParamError])(implicit lang:Lang) = {
+    ApiErrorResponse(BadRequest, ApiCode.E400_PARAM_ERROR_CODE, errors.map(e => s"${e.name} ... ${Messages(e.msg)(lang)}"))
   }
 
   val API_GLOBAL_ERROR = (errors: Seq[String]) => {
@@ -76,15 +78,19 @@ object HttpResults extends Loggable {
         log.error(s"Error message non identified: $e")
         "plyrhub.generic.error"
       })))
-
   }
 
   val API_UNAUTHORIZED_ERROR = (errors: Seq[String]) => {
     ApiErrorResponse(Unauthorized, ApiCode.E401_UNAUTHORIZED_ACCESS_CODE, errors)
   }
 
-  val API_GENERIC_ERROR = (errors: Seq[String]) => {
-    ApiErrorResponse(InternalServerError, ApiCode.E500_SERVER_ERROR_CODE, errors)
+  def ApiUnauthorizedError(errors: Seq[String])(implicit lang:Lang) = {
+    ApiErrorResponse(Unauthorized, ApiCode.E401_UNAUTHORIZED_ACCESS_CODE, errors.map(e => Messages(e)(lang)))
+  }
+
+
+  def ApiGenericError(errors: Seq[String])(implicit lang:Lang) = {
+    ApiErrorResponse(InternalServerError, ApiCode.E500_SERVER_ERROR_CODE, errors.map(e => Messages(e)(lang)))
   }
 
   private[this] def ApiErrorResponse(playStatus: Status, code: ApiCode, errors: Seq[String]) = {

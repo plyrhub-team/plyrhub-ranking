@@ -72,7 +72,7 @@ case class KeySelectExpr(keys: Map[String, FieldSelectorExpr])
 
 private object JsValueExtractorHelper {
 
-  def extractValue(value:JsValue) = value match {
+  def extractValue(value:JsValue) = (value: @unchecked) match {
     case JsString(s) => s
     case JsNumber(n) => n
     case JsBoolean(b) => b
