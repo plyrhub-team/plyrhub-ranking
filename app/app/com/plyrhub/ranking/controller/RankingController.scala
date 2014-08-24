@@ -39,7 +39,6 @@ object RankingController extends Controller with Loggable {
       implicit request =>
 
         val successBlock: PartialFunction[ServiceSuccess, Result] = {
-
           case RankingCreated(rn: String) => API_SIMPLE_CREATED
           case RankingAlreadyExist(rn: String) => ApiRqParamError(Seq(ParamError(rn, "plyrhub.ranking.already.exists")))
         }

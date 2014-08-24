@@ -58,31 +58,19 @@ class MemberRegistrator extends Actor with ActorLogging {
     // Prepare operations
     val fRegisterMember = RankingRepo.registerMember(owner, member, uniqueRepoId)
 
-    val fVerifyRankings = RankingRepo.verifyRankingsForMember(owner, member, rankings, uniqueRepoId)
+    val fFindRankings = RankingRepo.findRankingsForMember(owner, member, rankings, uniqueRepoId)
 
-    def fRegisterMemberInRankings(memberRegistered: ServiceSuccess, existingRankings: ServiceSuccess): Future[ServiceSuccess] = {
+    def fResult(memberRegistrationResult: ServiceSuccess, rankingsSearchResult: ServiceSuccess) = Future {
 
-      (memberRegistered, existingRankings) match {
+      (memberRegistrationResult, rankingsSearchResult) match {
+
         case (MemberRegistered(_), ExistingRankingsForMember(rankingsFound)) => {
 
-          if (rankingsFound.length != rankings.length) {
-            // There are rankings that do not exist -->> so we don't do the registration
-            Future.successful(MemberNonValidRankings(member, rankings.diff(rankingsFound)))
-          } else {
-            // Register the rankings in Db
-            Future.successful(MemberRegisteredInRankings(member))
-          }
+          val rankingsNotFound = rankings.diff(rankingsFound)
+          if (rankingsNotFound.size !=0) MemberNonValidRankings(member, rankingsNotFound) else memberRegistrationResult
+
         }
-        case (MemberRegistered(_), MemberGenericError(_, _)) => Future.successful(existingRankings)
-        case _ => Future.successful(SimpleIntermediateStep())
-      }
-    }
 
-    def fResult(memberRegistrationResult: ServiceSuccess, registrationInRankingsResult: ServiceSuccess) = Future {
-
-      (memberRegistrationResult, registrationInRankingsResult) match {
-
-        case (MemberRegistered(_), MemberRegisteredInRankings(_)) => memberRegistrationResult
         case (mrr, rrr) => {
 
           // Launch MisterWolf
@@ -90,22 +78,26 @@ class MemberRegistrator extends Actor with ActorLogging {
 
           // Identify the type of error to return
           (mrr, rrr) match {
-            case (MemberRegistered(_), _) => registrationInRankingsResult
-            case (MemberAlreadyExist(_), _) => memberRegistrationResult
-            case (MemberGenericError(_, _), _) => memberRegistrationResult
-            case (_, _) => registrationInRankingsResult
+            case (memberAlreadyRegistered@MemberAlreadyExist(_), _) =>
+              memberAlreadyRegistered
+            case (MemberGenericError(_, cause), _) =>
+              SimpleFailure(cause)
+            case (MemberRegistered(_), MemberGenericError(_, cause)) =>
+              SimpleFailure(cause)
+            case (err1, err2) =>
+              // This should not happen
+              // TODO: log the types
+              SimpleFailure("non expected error")
           }
         }
       }
-
     }
 
     // Combine
     val fServiceResult = for {
-      successMemberRegistered <- fRegisterMember
-      existingRankings <- fVerifyRankings
-      successRankingsForMember <- fRegisterMemberInRankings(successMemberRegistered, existingRankings)
-      result <- fResult(successMemberRegistered, successRankingsForMember)
+      memberRegistrationResult <- fRegisterMember
+      rankingsSearchResult <- fFindRankings
+      result <- fResult(memberRegistrationResult, rankingsSearchResult)
     } yield result
 
 

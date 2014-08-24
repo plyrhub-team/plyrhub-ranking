@@ -71,7 +71,7 @@ object RankingRepo extends MongoConfig with RedisConfig {
 
   }
 
-  def verifyRankingsForMember(owner: String, member: String, rankings: Seq[String], opId: String): Future[ServiceSuccess] = {
+  def findRankingsForMember(owner: String, member: String, rankings: Seq[String], opId: String): Future[ServiceSuccess] = {
 
     def rankingsCol: JSONCollection = mongoDB.collection[JSONCollection](RANKINGS)
 
