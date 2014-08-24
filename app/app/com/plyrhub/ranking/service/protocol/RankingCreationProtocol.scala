@@ -16,27 +16,29 @@
 
 package com.plyrhub.ranking.service.protocol
 
-import com.plyrhub.api.model.State
-import com.plyrhub.core.protocol.{ServiceSuccess, ServiceMessage}
-import com.plyrhub.ranking.model.RankingName
+import com.plyrhub.core.protocol.{ServiceMessage, ServiceSuccess}
+import com.plyrhub.ranking.conf.RankingConfig.ModelConstraints
+import com.plyrhub.ranking.model.Ranking
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 
-case class CreateRanking(ranking: String, fromTop: Int, fromBottom: Int, name: RankingName) extends ServiceMessage
 
-object CreateRanking {
+case class RankingCreationMsg(ranking: String, data: Ranking) extends ServiceMessage
+
+object RankingCreationMsg {
 
   // Serialization with combinators
-  implicit val createRankingReads: Reads[CreateRanking] = (
-    (__ \ "ranking").read[String] and
-      (__ \ "fromTop").read[Int] and
-      (__ \ "fromBottom").read[Int] and
-      (__ \ "name").read[RankingName]
-    )(CreateRanking.apply _)
+  implicit val createOrUpdateRankingMsgReads: Reads[RankingCreationMsg] = (
+    (__ \ "ranking").read[String]
+      (minLength[String](ModelConstraints.rnkIdMinLength) keepAnd maxLength[String](ModelConstraints.rnkIdMaxLength)) and
+      (__ \ "data").read[Ranking]
+    )(RankingCreationMsg.apply _)
 }
 
-case class CreateRanking2() extends ServiceMessage
 
+case class RankingCreated(rnk: String) extends ServiceSuccess
 
+case class RankingAlreadyExist(rnk: String) extends ServiceSuccess
 
+case class RankingGenericError(rnk:String, cause:String) extends ServiceSuccess

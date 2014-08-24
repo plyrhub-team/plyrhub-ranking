@@ -14,19 +14,27 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.core.log
+package com.plyrhub.ranking.service.gc
 
+import akka.actor.{Props, Actor, ActorLogging}
 import com.plyrhub.core.context.OperationContext
-import play.api.Logger
+import com.plyrhub.core.protocol.StartOperation
+import com.plyrhub.ranking.service.protocol.MisterWolfProtocol.{FixMemberRegistration, FixRankingCreation}
 
-trait Loggable {
+class MisterWolf extends Actor with ActorLogging {
 
-  lazy val log = Logger(s"plyrh-rnk.${this.getClass.getName}")
+  override def receive = {
 
-  object logex{
-    def error(octx:OperationContext, msg:String) = log.error(s"${octx.id} - ${msg}")
+    case StartOperation(ctx: OperationContext, message: FixRankingCreation) =>
+      log.error(s"Fixing RankingCreation for: ${ctx.id}, ${message.ranking}")
+
+    case StartOperation(ctx: OperationContext, message: FixMemberRegistration) =>
+      log.error(s"Fixing MemberRegistration for: ${ctx.id}, ${message.member}")
+
   }
 
 }
 
-
+object MisterWolf {
+  def props(): Props = Props(new MisterWolf)
+}

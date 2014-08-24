@@ -17,7 +17,7 @@
 
 package com.plyrhub.api.request
 
-import akka.actor.{Terminated, ActorRef, Actor}
+import akka.actor.{Actor, ActorRef, Terminated}
 
 class ActorWatch extends Actor{
 

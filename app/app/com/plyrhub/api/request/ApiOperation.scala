@@ -19,8 +19,8 @@ package com.plyrhub.api.request
 import akka.actor.SupervisorStrategy.Stop
 import akka.actor.{Actor, ActorRef, OneForOneStrategy, Props}
 import com.plyrhub.api.utils.HttpResults._
-import com.plyrhub.api.utils.{ApiDefaults, Utils}
-import com.plyrhub.core.Plyrhub
+import com.plyrhub.api.utils.Utils
+import com.plyrhub.core.PlyrhubRT
 import com.plyrhub.core.context.{ApiOperationContext, OperationContext}
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.core.protocol._
@@ -38,6 +38,7 @@ object ApiOperationDefaults {
 
   type initBlockType = (ApiOperationContext, ServiceMessage) => OperationProtocol
   type successBlockType = PartialFunction[ServiceSuccess, Result]
+  type failureBlockType = (ServiceFailure, OperationContext) => Result
 
   val onInitDefault: initBlockType = (ctx, message) => StartOperation(ctx, message)
 
@@ -58,7 +59,6 @@ trait ApiOperation extends Loggable {
 
   def onSuccess(newOnSuccess: successBlockType): ApiOperation
 
-
   def launch[S <: Actor : ClassTag](octx: OperationContext, message: ServiceMessage): Future[Result] = {
 
     val f = ApiRequestActor[S](onInitBlock, octx, message)
@@ -66,10 +66,7 @@ trait ApiOperation extends Loggable {
     implicit val lang = PlayLang(octx.lang.language, octx.lang.country)
 
     f
-      .map {
-      r =>
-        r.fold(_ => ApiGenericError(Seq("plyrhub.generic.error")), s => doUserResultOrDefaultManagement(s))
-    }
+      .map(_.fold(f => doDefaultFailure(f, octx), s => doUserResultOrDefaultManagement(s)))
       // Unexpected exception, already logged in the "supervisory-strategy"
       .recover {
       case _ => ApiGenericError(Seq("plyrhub.generic.error"))
@@ -77,13 +74,25 @@ trait ApiOperation extends Loggable {
 
   }
 
+  val doDefaultFailure: failureBlockType = (f: ServiceFailure, octx: OperationContext) => {
+    f match {
+      case SimpleFailure(msg) =>
+        logex.error(octx, msg)
+        ApiGenericError(Seq("plyrhub.generic.error"))
+      case x =>
+        logex.error(octx, s"FailureMessage from ServiceActor not managed. MessageType -> ${x.getClass.getCanonicalName}")
+        ApiGenericError(Seq("plyrhub.generic.error"))
+    }
+  }
+
   lazy val doUserResultOrDefaultManagement = onSuccessBlock orElse doDefaultSuccessManagement
 
-  val doDefaultSuccessManagement: successBlockType = {
-    case notManaged => 
+  val doDefaultSuccessManagement:successBlockType =  {
+    case notManaged =>
       // You have received a ServiceSuccess but you are not managing it in your onSuccessBlock
       // TODO: add more info and add a Metric
-      log.error(s"Message from ServiceActor not managed: ${notManaged.getClass.getCanonicalName}")
+      // Look to include the OperationContext
+      log.error(s"SuccessMessage from ServiceActor not managed. MessageType -> ${notManaged.getClass.getCanonicalName}")
       ApiGenericError(Seq("plyrhub.generic.error"))
   }
 
@@ -120,8 +129,8 @@ class ApiRequestActor(targetProps: Props, init: initBlockType, octx: OperationCo
       // If there is an exception on the ServiceActor we just stop
       case e => {
         // Log the error
-        log.error(s"There was an error processing: ${message.toString}")
-        log.error(s"The exception was: ${e.getMessage}")
+        logex.error(octx, s"There was an error processing: ${message.toString}")
+        logex.error(octx, s"The exception was: ${e.getMessage}")
         p.failure(e)
 
         // TODO: review child-stop
@@ -147,13 +156,14 @@ object ApiRequestActor {
   def apply[S <: Actor : ClassTag](init: initBlockType, octx: OperationContext, message: ServiceMessage): Future[Either[ServiceFailure, ServiceSuccess]] = {
 
     // Prepare the ServiceActor
-    val targetProps = Props(implicitly[ClassTag[S]].runtimeClass)
+    val rtActorClass = implicitly[ClassTag[S]].runtimeClass
+    val targetProps = Props(rtActorClass)
 
     val p = Promise[Either[ServiceFailure, ServiceSuccess]]
 
-    Plyrhub.actorSystem.actorOf(Props(classOf[ApiRequestActor], targetProps, init, octx, message, p))
+    // Create the APR-ActorPerRequest
+    PlyrhubRT.actorSystem.actorOf(Props(classOf[ApiRequestActor], targetProps, init, octx, message, p), s"APR-${octx.id}-${rtActorClass.getSimpleName}")
 
     p.future
-
   }
 }

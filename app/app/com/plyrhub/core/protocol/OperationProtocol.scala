@@ -28,7 +28,8 @@ trait ServiceSuccess extends ServiceResponse
 trait ServiceFailure extends ServiceResponse
 
 case class SimpleSuccess() extends ServiceSuccess
-case class SimpleFailure() extends ServiceFailure
+case class SimpleIntermediateStep() extends ServiceSuccess
+case class SimpleFailure(msg:String) extends ServiceFailure
 
 sealed trait OperationProtocol
 

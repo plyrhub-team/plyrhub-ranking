@@ -14,10 +14,20 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.ranking.gc
+package com.plyrhub.core
 
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.ActorSystem
+import com.plyrhub.core.log.Loggable
 
-class MisterWolf extends Actor with ActorLogging{
-  override def receive = ???
+object PlyrhubRT extends Loggable {
+
+  private[core] var _currentActorSystem: ActorSystem = _
+
+  def installRuntime(actorSystem: ActorSystem) = {
+
+    _currentActorSystem = actorSystem
+
+  }
+
+  def actorSystem:ActorSystem = Option(_currentActorSystem).getOrElse(sys.error("PLYRHUB RUNTIME NO INITIALIZED!!!"))
 }

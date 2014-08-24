@@ -107,6 +107,13 @@ sealed abstract class RankingProp(val prop: String, val value: String = "")
 // Empty prop
 case class RankingPropNoop() extends RankingProp("noop")
 
+// Unique per user
+abstract class RankingPropIsScope(private val trueFalse: String) extends RankingProp("perUser", trueFalse)
+
+case class RankingPropIsSameForAll() extends RankingPropIsScope("all")
+case class RankingPropIsDifferentForEach() extends RankingPropIsScope("each")
+
+
 // Time properties
 abstract class RankingPropIsTime(private val whatTime: String) extends RankingProp("resetPeriod", whatTime)
 
@@ -129,7 +136,8 @@ object RankingProp {
   private val isMonthly = RankingPropIsMonthly()
   private val isAnnual = RankingPropIsAnnual()
 
-  private val mapTimeProps = Map(
+  private val mapRankingProps = Map(
+    // Time Props
     isEternal.value -> isEternal,
     isDaily.value -> isDaily,
     isWeekly.value -> isWeekly,
@@ -146,10 +154,10 @@ object RankingProp {
   }
 
   private def resolveProp(prop: String, value: String) = {
-    mapTimeProps.get(Option(value).getOrElse("no-key").trim)
+    mapRankingProps.get(Option(value).getOrElse("no-key").trim)
   }
 
-  def validProps = mapTimeProps.keys;
+  def validProps = mapRankingProps.keys;
 
   def unapply(rp: RankingProp) = {
     Some(rp.prop, rp.value)

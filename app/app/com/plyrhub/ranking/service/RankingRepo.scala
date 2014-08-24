@@ -19,25 +19,73 @@ package com.plyrhub.ranking.service
 import com.plyrhub.core.protocol.ServiceSuccess
 import com.plyrhub.core.store.mongo.{JSONCollection, MongoConfig}
 import com.plyrhub.core.store.redis.RedisConfig
-import com.plyrhub.ranking.model.{MongoRanking, MongoSchema, Ranking}
-import com.plyrhub.ranking.service.protocol.{RankingAlreadyExist, RankingCreated}
+import com.plyrhub.ranking.model.{MongoMember, MongoRanking, MongoSchema, Ranking}
+import com.plyrhub.ranking.service.protocol._
+import play.api.libs.json.{JsString, JsArray, Json}
+import reactivemongo.core.errors.DatabaseException
 
 import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.{Future, Promise}
 
 object RankingRepo extends MongoConfig with RedisConfig {
 
-  def createRanking(owner: String, ranking: String, data: Ranking): Future[ServiceSuccess] = {
+  import MongoSchema._
 
-    def rankings: JSONCollection = mongoDB.collection[JSONCollection](MongoSchema.RANKINGS)
+  def createRanking(owner: String, ranking: String, data: Ranking, opId: String): Future[ServiceSuccess] = {
+
+    def rankingsCol: JSONCollection = mongoDB.collection[JSONCollection](RANKINGS)
 
     val p = Promise[ServiceSuccess]
-    val f =rankings
-      .insert(MongoRanking.build(owner, ranking, data))
+    val f = rankingsCol
+      .insert(MongoRanking.build(owner, ranking, data, opId))
       .map(lastError => p.success(RankingCreated(ranking)))
 
-    f.onFailure{
-      case _ => p.success(RankingAlreadyExist(ranking))
+    f.onFailure {
+      case de: DatabaseException if de.code.isDefined && de.code.get == 11000 => p.success(RankingAlreadyExist(ranking))
+      case x => {
+        p.success(RankingGenericError(ranking, x.getMessage))
+      }
+    }
+
+    p.future
+
+  }
+
+  def registerMember(owner: String, member: String, opId: String): Future[ServiceSuccess] = {
+
+    def membersCol: JSONCollection = mongoDB.collection[JSONCollection](MEMBERS)
+
+    val p = Promise[ServiceSuccess]
+    val f = membersCol
+      .insert(MongoMember.build(owner, member, opId))
+      .map(lastError => p.success(MemberRegistered(member)))
+
+    f.onFailure {
+      case de: DatabaseException if de.code.isDefined && de.code.get == 11000 => p.success(MemberAlreadyExist(member))
+      case x => {
+        p.success(MemberGenericError(member, x.getMessage))
+      }
+    }
+
+    p.future
+
+  }
+
+  def verifyRankingsForMember(owner: String, member: String, rankings: Seq[String], opId: String): Future[ServiceSuccess] = {
+
+    def rankingsCol: JSONCollection = mongoDB.collection[JSONCollection](RANKINGS)
+
+    val p = Promise[ServiceSuccess]
+    val f =
+      rankingsCol
+        .find(Json.obj("_id" -> Json.obj("$in" -> JsArray(Seq(rankings.map(r => JsString(RANKING_KEY(owner, r)))).flatten))), Json.obj("ranking" -> 1))
+        .cursor[MongoRanking]
+        .collect[Seq]()
+        .map(lmr => p.success(ExistingRankingsForMember(lmr.map(mr => mr.ranking))))
+
+    f.onFailure {
+      case x =>
+        p.success(MemberGenericError(member, x.getMessage))
     }
 
     p.future

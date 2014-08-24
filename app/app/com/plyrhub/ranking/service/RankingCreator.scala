@@ -16,45 +16,58 @@
 
 package com.plyrhub.ranking.service
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorLogging, ActorRef}
+import com.plyrhub.core.context.{OperationContext, Owner}
+import com.plyrhub.core.protocol._
+import com.plyrhub.core.utils.Misc
+import com.plyrhub.ranking.service.protocol.{RankingCreationMsg, RankingAlreadyExist, RankingCreated, RankingGenericError}
+
+import scala.concurrent.Future
+
+// TODO: Review Implicits
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 // TODO: review implicits
 
-class RankingCreator extends Actor {
+class RankingCreator extends Actor with ActorLogging {
 
+  override def receive = {
 
-/*  override def receive = {
-    case StartOperation(ctx: OperationContext, message: CreateRanking) =>
-      println("telling everything is done")
+    case StartOperation(ctx: OperationContext, message: RankingCreationMsg) =>
 
-      val theSender = sender()
+      startOperation(sender(), ctx, message)
 
-      val f = RedisStore.storePosition("ranking1", "m1", 9)
-      f.onSuccess{
-        case l => theSender ! Complete(RankingCreated(RankingName("es--rnk1", "ss", "ll", true, StateActive())))
+  }
+
+  def startOperation(sender: ActorRef, ctx: OperationContext, message: RankingCreationMsg) = {
+
+    /*
+        - create ranking in MongoDB
+        - If fail
+          -> report error to client
+        - If everything is OK
+          -> report Success to client
+     */
+
+    // Saving data to Mongo
+    val fCreateRanking = RankingRepo.createRanking(Owner(ctx.owner).get, message.ranking, message.data, Misc.uniqueID)
+
+    def fResult(result: ServiceSuccess) = Future {
+      result match {
+        case r@(RankingCreated(_) | RankingAlreadyExist(_)) => r
+        case RankingGenericError(ranking, cause) => SimpleFailure(cause)
       }
-      f.onFailure{
-        case t => theSender ! Complete(SimpleFailure())
-      }
+    }
 
-      //sender ! OperationCompleted(Right(SimpleSuccess()))
-      //sender ! Complete(RankingCreated(RankingName("es", "ss", "ll", true, StateActive())))
+    // Combine
+    val fServiceResult = for {
+      success <- fCreateRanking
+      result <- fResult(success)
+    } yield result
 
-    case StartOperation(ctx: OperationContext, message: CreateRanking2) =>
-      println("telling everything is done")
+    // Return
+    fServiceResult.map(Complete(sender, _))
 
-      val theSender = sender()
-
-      val f = RedisStore.storePosition("ranking2", "m2", 9)
-      f.onSuccess{
-        case l => theSender ! Complete(RankingCreated(RankingName("es--rnk2", "ss", "ll", true, StateActive())))
-      }
-      f.onFailure{
-        case t => theSender ! Complete(SimpleFailure())
-      }
-
-      //sender ! OperationCompleted(Right(SimpleSuccess()))
-      //sender ! Complete(RankingCreated(RankingName("es", "ss", "ll", true, StateActive())))
-  }*/
-  override def receive = ???
+  }
 }

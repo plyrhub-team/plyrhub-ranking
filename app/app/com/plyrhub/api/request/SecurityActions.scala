@@ -22,8 +22,8 @@ import com.plyrhub.core.log.Loggable
 import play.api.i18n.Lang
 import play.api.mvc._
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits._
+import scala.concurrent.Future
 
 // TODO: review "Execution.Implicits._"
 

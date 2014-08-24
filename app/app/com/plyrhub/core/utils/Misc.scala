@@ -14,20 +14,12 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.core
+package com.plyrhub.core.utils
 
-import akka.actor.ActorSystem
-import com.plyrhub.core.log.Loggable
+import java.util.UUID
 
-object Plyrhub extends Loggable {
+object Misc {
 
-  private[core] var _currentActorSystem: ActorSystem = _
+  def uniqueID = UUID.randomUUID().toString
 
-  def installRuntime(actorSystem: ActorSystem) = {
-
-    _currentActorSystem = actorSystem
-
-  }
-
-  def actorSystem:ActorSystem = Option(_currentActorSystem).getOrElse(sys.error("PLYRHUB RUNTIME NO INITIALIZED!!!"))
 }

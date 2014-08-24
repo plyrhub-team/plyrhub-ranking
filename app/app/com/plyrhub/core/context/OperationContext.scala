@@ -17,37 +17,51 @@
 package com.plyrhub.core.context
 
 import com.plyrhub.core.model.Lang
+import com.plyrhub.core.utils.Misc
 
 import scala.util.Try
 
 sealed trait ApiOwner
 
-case class Owner(id:String) extends ApiOwner
+case class Owner(id: String) extends ApiOwner
+
 object Owner {
-  def apply(apiOwner:ApiOwner):Option[String] = {
+  def apply(apiOwner: ApiOwner): Option[String] = {
     Try {
       val owner = apiOwner.asInstanceOf[Owner]
       Some(owner.id)
-    }.getOrElse{
+    }.getOrElse {
       None
     }
   }
 }
 
 case class NoOwner() extends ApiOwner
+
 case class NotAllowedOwner() extends ApiOwner
 
 sealed trait ApiProfile
-case class Profile(scopes: Map[String,String]) extends ApiProfile
+
+case class Profile(scopes: Map[String, String]) extends ApiProfile
+
 case class NoProfile() extends ApiProfile
 
 sealed trait ApiUser
-case class User(id:String, profile:Profile) extends ApiUser
+
+case class User(id: String, profile: Profile) extends ApiUser
+
 case class NoUser() extends ApiUser
+
 case class NotAllowedUser() extends ApiUser
 
 sealed trait ApiOperationContext
-case class OperationContext(owner:ApiOwner, user:ApiUser, lang:Lang) extends ApiOperationContext
+
+case class OperationContext(owner: ApiOwner, user: ApiUser, lang: Lang) extends ApiOperationContext {
+
+  val id = Misc.uniqueID
+
+}
+
 case class NoOperationContext() extends ApiOperationContext
 
 

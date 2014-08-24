@@ -14,25 +14,15 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.api.conf
+package com.plyrhub.ranking.service
 
 import com.plyrhub.core.PlyrhubRT
-import play.Plugin
-import play.api.Application
-import play.api.libs.concurrent.Akka
+import com.plyrhub.ranking.service.gc.MisterWolf
 
-import play.api.Play.current
+object RankingServiceRT {
 
-class PlyrhubBootstrap(app: Application) extends Plugin {
+  lazy val misterWolf = PlyrhubRT.actorSystem.actorOf(MisterWolf.props(), "mister-wolf")
 
-  override def onStart() = {
 
-    startupAkkaSystemForPlyrhub
-
-  }
-
-  def startupAkkaSystemForPlyrhub = {
-    PlyrhubRT.installRuntime(Akka.system)
-  }
 
 }

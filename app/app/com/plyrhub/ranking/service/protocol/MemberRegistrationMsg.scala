@@ -18,29 +18,31 @@ package com.plyrhub.ranking.service.protocol
 
 import com.plyrhub.core.protocol.{ServiceMessage, ServiceSuccess}
 import com.plyrhub.ranking.conf.RankingConfig.ModelConstraints
-import com.plyrhub.ranking.model.Ranking
+import com.plyrhub.ranking.model.MemberRankings
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 
+case class MemberRegistrationMsg(member: String, data: MemberRankings) extends ServiceMessage
 
-case class CreateOrUpdateRankingMsg(rnk: String, data: Ranking) extends ServiceMessage
-
-object CreateOrUpdateRankingMsg {
+object MemberRegistrationMsg {
 
   // Serialization with combinators
-  implicit val createOrUpdateRankingMsgReads: Reads[CreateOrUpdateRankingMsg] = (
-    (__ \ "ranking").read[String]
-      (minLength[String](ModelConstraints.rnkIdMinLength) keepAnd maxLength[String](ModelConstraints.rnkIdMaxLength)) and
-      (__ \ "data").read[Ranking]
-    )(CreateOrUpdateRankingMsg.apply _)
+  implicit val memberRegistrationMsgMsgReads: Reads[MemberRegistrationMsg] = (
+    (__ \ "member").read[String]
+      (minLength[String](ModelConstraints.memberIdMinLength) keepAnd maxLength[String](ModelConstraints.memberIdMaxLength)) and
+      (__ \ "data").read[MemberRankings]
+    )(MemberRegistrationMsg.apply _)
 }
 
+case class MemberRegistered(member: String) extends ServiceSuccess
 
-case class RankingCreated(rnk: String) extends ServiceSuccess
+case class MemberAlreadyExist(member: String) extends ServiceSuccess
 
-case class RankingUpdated(rnk: String) extends ServiceSuccess
+case class MemberRegisteredInRankings(member:String) extends ServiceSuccess
 
-case class RankingAlreadyExist(rnk: String) extends ServiceSuccess
+case class MemberNonValidRankings(member: String, nonValidRankings:Seq[String]) extends ServiceSuccess
 
-case class RankingGenericError(rnk:String) extends ServiceSuccess
+case class MemberGenericError(member:String, cause:String) extends ServiceSuccess
+
+case class ExistingRankingsForMember(rankings:Seq[String]) extends ServiceSuccess

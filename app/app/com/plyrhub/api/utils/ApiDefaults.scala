@@ -38,6 +38,7 @@ object ApiDefaults {
 
     // Usual Params
     val RANKING_ID = Param[P, String]("ranking")
+    val MEMBER_ID = Param[P, String]("member")
     val BODY = Param[B, B]("data")
     val FROM_TOP = Param[Q, Int]("fromTop", 5)
     val FROM_BOTTOM = Param[Q, Int]("fromBottom", 5)

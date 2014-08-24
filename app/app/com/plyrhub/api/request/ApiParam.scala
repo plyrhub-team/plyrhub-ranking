@@ -177,7 +177,7 @@ final class Param[+O <: ParamOrigin : TypeTag, +R: TypeTag, +M <: Presence : Typ
     }
   }
 
-  import ApiAction.CustomTypes._
+  import com.plyrhub.api.request.ApiAction.CustomTypes._
   def seedMap(value:Any)(implicit request:apiActionRequestType):pathValuesType = request => Map(name -> value)
   def seedValue(value:Any) = name -> value
 

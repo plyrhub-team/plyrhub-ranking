@@ -15,6 +15,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Generic
 plyrhub.generic.error = error no esperado
 plyrhub.non.valid.body = body no válido.Posibles causas mensaje mal formado o Content-Type no correcto
 
@@ -30,8 +31,8 @@ plyrhub.p.converter.minLength = longitud mínima admitida no alcanzada
 plyrhub.p.converter.mandatory.value.not.provided = valor requerido no proporcionado (si se está enviando->revisar el 'Content-Type')
 
 # Ranking Model specific
-plyrhub.error.non.valid.collection.length = se indicó un número mayor de colecciones que el permitido 
-plyrhub.error.non.valid.collection = la coleccion indicada no es válida
+plyrhub.error.non.valid.collection.length = el número de colecciones indicado no es correcto
+plyrhub.error.non.valid.collection = las colecciones indicadas no son válidas o no han sido indicadas
 
 plyrhub.not.authorized.owner = petición no autorizada (owner)
 plyrhub.owner.authorization.generic.error = error no esperado en la autorización del owner
@@ -42,3 +43,11 @@ plyrhub.non.expected.authorization.error = error en la autorización
 # RankingController
 # createOrUpdate
 plyrhub.ranking.already.exists = el ranking ya existe
+
+# Member Model Specific
+plyrhub.member.error.non.valid.rankings.length = el número de rankings indicado no es correcto
+plyrhub.member.error.non.valid.rankings = los rankings indicados no son válidos o no han sido proporcionados
+
+# MemberController
+plyrhub.member.already.exists = el usuario ya está registrado
+plyrhub.member.non.valid.rankings = algunos de los rankings indicados no existen

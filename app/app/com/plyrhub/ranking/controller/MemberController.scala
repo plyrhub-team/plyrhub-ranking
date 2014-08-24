@@ -21,18 +21,18 @@ import com.plyrhub.api.utils.ApiDefaults.ActionDefaults._
 import com.plyrhub.api.utils.HttpResults._
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.core.protocol.ServiceSuccess
-import com.plyrhub.ranking.service.RankingCreator
-import com.plyrhub.ranking.service.protocol.{RankingAlreadyExist, RankingCreated, RankingCreationMsg}
+import com.plyrhub.ranking.service.{MemberRegistrator, RankingCreator}
+import com.plyrhub.ranking.service.protocol._
 import play.api.mvc.{Controller, Result}
 
-object RankingController extends Controller with Loggable {
+object MemberController extends Controller with Loggable {
 
   /*
-    Creates a new ranking
+    Registrates a new Member
    */
-  val createOrUpdateParams = Seq(RANKING_ID, BODY)
+  val registrateMemberParams = Seq(MEMBER_ID, BODY)
 
-  def createOrUpdate(rnk: String) =
+  def registrateMember(member: String) =
 
     AuthAction.async {
 
@@ -40,15 +40,16 @@ object RankingController extends Controller with Loggable {
 
         val successBlock: PartialFunction[ServiceSuccess, Result] = {
 
-          case RankingCreated(rn: String) => API_SIMPLE_CREATED
-          case RankingAlreadyExist(rn: String) => ApiRqParamError(Seq(ParamError(rn, "plyrhub.ranking.already.exists")))
+          case MemberRegistered(member:String) => API_SIMPLE_CREATED
+          case MemberAlreadyExist(member:String) => ApiRqParamError(Seq(ParamError(member, "plyrhub.member.already.exists")))
+          case MemberNonValidRankings(member:String, nonValidRankings:Seq[String]) => ApiRqParamError(Seq(ParamError(member, "plyrhub.member.non.valid.rankings")))
         }
 
         DefaultAction()
-          .withParams(createOrUpdateParams)
-          .withPathValues(RANKING_ID.seedMap(rnk))
+          .withParams(registrateMemberParams)
+          .withPathValues(MEMBER_ID.seedMap(member))
           .withSuccessBlock(successBlock)
-          .launch[RankingCreationMsg, RankingCreator]
+          .launch[MemberRegistrationMsg, MemberRegistrator]
 
     }
 

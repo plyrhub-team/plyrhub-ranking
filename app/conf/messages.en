@@ -15,6 +15,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Generic
 plyrhub.generic.error = (EN) error no esperado
 plyrhub.non.valid.body = (EN) body no válido.Posibles causas mensaje mal formado o Content-Type no correcto
 
@@ -27,12 +28,11 @@ plyrhub.p.converter.missing.value = (EN) valor no encontrado
 plyrhub.p.converter.maxLength = (EN) longitud máxima admitida superada
 # error.minLength <-- plyrhub.p.converter.minLength 
 plyrhub.p.converter.minLength = (EN) longitud mínima admitida no alcanzada 
-plyrhub.p.converter.mandatory.value.not.provided = (EN) valor requerido no proporcionado (si se está enviando->revisar el \
-  Content\Type)
+plyrhub.p.converter.mandatory.value.not.provided = (EN) valor requerido no proporcionado (si se está enviando->revisar el 'Content-Type')
 
 # Ranking Model specific
-plyrhub.error.non.valid.collection.length = (EN) se indicó un número mayor de colecciones que el permitido 
-plyrhub.error.non.valid.collection = (EN) la coleccion indicada no es válida
+plyrhub.error.non.valid.collection.length = (EN) el número de colecciones indicado no es correcto
+plyrhub.error.non.valid.collection = (EN) las colecciones indicadas no son válidas o no han sido indicadas
 
 plyrhub.not.authorized.owner = (EN) petición no autorizada (owner)
 plyrhub.owner.authorization.generic.error = (EN) error no esperado en la autorización del owner
@@ -43,3 +43,11 @@ plyrhub.non.expected.authorization.error = (EN) error en la autorización
 # RankingController
 # createOrUpdate
 plyrhub.ranking.already.exists = (EN) el ranking ya existe
+
+# Member Model Specific
+plyrhub.member.error.non.valid.rankings.length = (EN) el número de rankings indicado no es correcto
+plyrhub.member.error.non.valid.rankings = (EN) los rankings indicados no son válidos o no han sido proporcionados
+
+# MemberController
+plyrhub.member.already.exists = (EN) el usuario ya está registrado
+plyrhub.member.non.valid.rankings = (EN) algunos de los rankings indicados no existen
