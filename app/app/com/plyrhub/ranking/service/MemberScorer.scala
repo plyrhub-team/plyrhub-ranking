@@ -48,7 +48,17 @@ class MemberScorer extends Actor with ActorLogging {
     val score = message.data.score
     val rankings = message.data.rankings
 
-    //
+    // save to mongo (with indicator of opId + id (Incremental)
+    // verify rankings
+    // Ok ->>> return
+    // Ok ->>> sent to Redis Scorer
+    // Fail ->>> Send to MisterWolf
+
+    // Redis Scorer
+    //  -> score
+    //  -> update Mongo (if fail ->) --->> doesn't matter we can reconstruct the ranking for the user (we have the data)
+    //                               --->> done through the recollector (looks for the non-confirmed operations and reconstrcut for that user)
+
 
     // RegisterMember
     val fRegisterMember = RankingRepo.registerMember(owner, member, rankings, uniqueRepoId)
