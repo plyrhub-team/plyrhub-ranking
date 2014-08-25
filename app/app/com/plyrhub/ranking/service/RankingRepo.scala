@@ -51,13 +51,13 @@ object RankingRepo extends MongoConfig with RedisConfig {
 
   }
 
-  def registerMember(owner: String, member: String, opId: String): Future[ServiceSuccess] = {
+  def registerMember(owner: String, member: String, rankings: Seq[String], opId: String): Future[ServiceSuccess] = {
 
     def membersCol: JSONCollection = mongoDB.collection[JSONCollection](MEMBERS)
 
     val p = Promise[ServiceSuccess]
     val f = membersCol
-      .insert(MongoMember.build(owner, member, opId))
+      .insert(MongoMember.build(owner, member, rankings, opId))
       .map(lastError => p.success(MemberRegistered(member)))
 
     f.onFailure {
@@ -76,9 +76,13 @@ object RankingRepo extends MongoConfig with RedisConfig {
     def rankingsCol: JSONCollection = mongoDB.collection[JSONCollection](RANKINGS)
 
     val p = Promise[ServiceSuccess]
+
+    val selector = Json.obj("_id" ->  Json.obj("$in" -> JsArray(Seq(rankings.map(r => JsString(RANKING_KEY(owner, r)))).flatten)))
+    val projection = Json.obj("ranking" -> 1)
+
     val f =
       rankingsCol
-        .find(Json.obj("_id" -> Json.obj("$in" -> JsArray(Seq(rankings.map(r => JsString(RANKING_KEY(owner, r)))).flatten))), Json.obj("ranking" -> 1))
+        .find(selector, projection)
         .cursor[MongoRanking]
         .collect[Seq]()
         .map(lmr => p.success(ExistingRankingsForMember(lmr.map(mr => mr.ranking))))

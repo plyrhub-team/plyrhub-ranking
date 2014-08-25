@@ -18,11 +18,13 @@ package com.plyrhub.ranking.service
 
 import com.plyrhub.core.PlyrhubRT
 import com.plyrhub.ranking.service.gc.MisterWolf
+import com.plyrhub.ranking.service.protocol.MisterWolfProtocol.FixMeMisterWorlf
 
 object RankingServiceRT {
 
   lazy val misterWolf = PlyrhubRT.actorSystem.actorOf(MisterWolf.props(), "mister-wolf")
 
+  def fixme(fxm:FixMeMisterWorlf) = misterWolf ! fxm
 
 
 }

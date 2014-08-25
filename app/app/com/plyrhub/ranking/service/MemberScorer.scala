@@ -20,7 +20,6 @@ import akka.actor.{Actor, ActorLogging, ActorRef}
 import com.plyrhub.core.context.{OperationContext, Owner}
 import com.plyrhub.core.protocol._
 import com.plyrhub.core.utils.Misc
-import com.plyrhub.ranking.service.protocol.MisterWolfProtocol.FixMemberRegistration
 import com.plyrhub.ranking.service.protocol._
 
 import scala.concurrent.Future
@@ -31,22 +30,25 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 // TODO: review implicits
 
-class MemberRegistrator extends Actor with ActorLogging {
+class MemberScorer extends Actor with ActorLogging {
 
   override def receive = {
 
-    case StartOperation(ctx: OperationContext, message: MemberRegistrationMsg) =>
+    case StartOperation(ctx: OperationContext, message: MemberScoreMsg) =>
 
       startOperation(sender(), ctx, message)
 
   }
 
-  def startOperation(sender: ActorRef, ctx: OperationContext, message: MemberRegistrationMsg) = {
+  def startOperation(sender: ActorRef, ctx: OperationContext, message: MemberScoreMsg) = {
 
     val uniqueRepoId = Misc.uniqueID
     val owner = Owner(ctx.owner).get
     val member = message.member
+    val score = message.data.score
     val rankings = message.data.rankings
+
+    //
 
     // RegisterMember
     val fRegisterMember = RankingRepo.registerMember(owner, member, rankings, uniqueRepoId)

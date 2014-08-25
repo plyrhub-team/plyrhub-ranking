@@ -50,3 +50,11 @@ object MemberRankings {
 
   implicit val memberRankingsWrites = Json.writes[MemberRankings]
 }
+
+case class MemberScore(score:Int, rankings:MemberRankings)
+
+object MemberScore {
+
+  implicit val memberScoreReads: Reads[MemberScore] = Json.reads[MemberScore]
+  implicit val memberScoreWrites = Json.writes[MemberScore]
+}

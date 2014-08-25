@@ -20,7 +20,9 @@ import com.plyrhub.ranking.model.{MemberRankings, Ranking}
 
 object MisterWolfProtocol {
 
-  case class FixRankingCreation(owner:String, ranking:String, data:Ranking, opId:String)
+  sealed trait FixMeMisterWorlf
 
-  case class FixMemberRegistration(owner:String, member:String, data:MemberRankings, opId:String)
+  case class FixRankingCreation(owner:String, ranking:String, data:Ranking, opId:String) extends FixMeMisterWorlf
+
+  case class FixMemberRegistration(owner:String, member:String, data:MemberRankings, opId:String) extends FixMeMisterWorlf
 }

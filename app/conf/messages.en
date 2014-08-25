@@ -50,4 +50,4 @@ plyrhub.member.error.non.valid.rankings = (EN) los rankings indicados no son vá
 
 # MemberController
 plyrhub.member.already.exists = (EN) el usuario ya está registrado
-plyrhub.member.non.valid.rankings = (EN) algunos de los rankings indicados no existen
+plyrhub.member.non.valid.rankings = (EN) los siguientes rankings no existen: {0}

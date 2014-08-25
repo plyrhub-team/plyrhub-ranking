@@ -18,31 +18,19 @@ package com.plyrhub.ranking.service.protocol
 
 import com.plyrhub.core.protocol.{ServiceMessage, ServiceSuccess}
 import com.plyrhub.ranking.conf.RankingConfig.ModelConstraints
-import com.plyrhub.ranking.model.MemberRankings
+import com.plyrhub.ranking.model.MemberScore
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 
-case class MemberRegistrationMsg(member: String, data: MemberRankings) extends ServiceMessage
+case class MemberScoreMsg(member: String, data: MemberScore) extends ServiceMessage
 
-object MemberRegistrationMsg {
+object MemberScoreMsg {
 
   // Serialization with combinators
-  implicit val memberRegistrationMsgMsgReads: Reads[MemberRegistrationMsg] = (
+  implicit val memberScoreMsgReads: Reads[MemberScoreMsg] = (
     (__ \ "member").read[String]
       (minLength[String](ModelConstraints.memberIdMinLength) keepAnd maxLength[String](ModelConstraints.memberIdMaxLength)) and
-      (__ \ "data").read[MemberRankings]
-    )(MemberRegistrationMsg.apply _)
+      (__ \ "data").read[MemberScore]
+    )(MemberScoreMsg.apply _)
 }
-
-case class MemberRegistered(member: String) extends ServiceSuccess
-
-case class MemberAlreadyExist(member: String) extends ServiceSuccess
-
-case class MemberRegisteredInRankings(member:String) extends ServiceSuccess
-
-case class MemberNonValidRankings(member: String, nonValidRankings:Seq[String]) extends ServiceSuccess
-
-case class MemberGenericError(member:String, cause:String) extends ServiceSuccess
-
-case class ExistingRankingsForMember(rankings:Seq[String]) extends ServiceSuccess

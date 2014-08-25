@@ -21,7 +21,7 @@ import com.plyrhub.api.utils.ApiDefaults.ActionDefaults._
 import com.plyrhub.api.utils.HttpResults._
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.core.protocol.ServiceSuccess
-import com.plyrhub.ranking.service.{MemberRegistrator, RankingCreator}
+import com.plyrhub.ranking.service.{MemberScorer, MemberRegistrator, RankingCreator}
 import com.plyrhub.ranking.service.protocol._
 import play.api.mvc.{Controller, Result}
 
@@ -30,7 +30,7 @@ object MemberController extends Controller with Loggable {
   /*
     Registrates a new Member
    */
-  val registrateMemberParams = Seq(MEMBER_ID, BODY)
+  val memberParams = Seq(MEMBER_ID, BODY)
 
   def registrateMember(member: String) =
 
@@ -40,16 +40,46 @@ object MemberController extends Controller with Loggable {
 
         val successBlock: PartialFunction[ServiceSuccess, Result] = {
 
-          case MemberRegistered(member:String) => API_SIMPLE_CREATED
-          case MemberAlreadyExist(member:String) => ApiRqParamError(Seq(ParamError(member, "plyrhub.member.already.exists")))
-          case MemberNonValidRankings(member:String, nonValidRankings:Seq[String]) => ApiRqParamError(Seq(ParamError(member, "plyrhub.member.non.valid.rankings")))
+          case MemberRegistered(member: String) => API_SIMPLE_CREATED
+          case MemberAlreadyExist(member: String) => ApiRqParamError(Seq(ParamError(member, "plyrhub.member.already.exists")))
+          case MemberNonValidRankings(member: String, nonValidRankings: Seq[String]) => {
+            ApiRqParamError(Seq(ParamError(member, "plyrhub.member.non.valid.rankings", Some(nonValidRankings.mkString(",")))))
+          }
         }
 
         DefaultAction()
-          .withParams(registrateMemberParams)
+          .withParams(memberParams)
           .withPathValues(MEMBER_ID.seedMap(member))
           .withSuccessBlock(successBlock)
           .launch[MemberRegistrationMsg, MemberRegistrator]
+
+    }
+
+  /*
+    Increments score on the selected rankings
+    The score is a Delta to add to the existing value
+      - note: the score can be negative
+   */
+  def score(member: String) =
+
+    AuthAction.async {
+
+      implicit request =>
+
+        val successBlock: PartialFunction[ServiceSuccess, Result] = {
+
+          case MemberRegistered(member: String) => API_SIMPLE_CREATED
+          case MemberAlreadyExist(member: String) => ApiRqParamError(Seq(ParamError(member, "plyrhub.member.already.exists")))
+          case MemberNonValidRankings(member: String, nonValidRankings: Seq[String]) => {
+            ApiRqParamError(Seq(ParamError(member, "plyrhub.member.non.valid.rankings", Some(nonValidRankings.mkString(",")))))
+          }
+        }
+
+        DefaultAction()
+          .withParams(memberParams)
+          .withPathValues(MEMBER_ID.seedMap(member))
+          .withSuccessBlock(successBlock)
+          .launch[MemberScoreMsg, MemberScorer]
 
     }
 

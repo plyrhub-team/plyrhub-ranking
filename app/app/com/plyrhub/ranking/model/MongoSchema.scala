@@ -24,7 +24,7 @@ import play.api.libs.json._
 
 object MongoSchema {
 
-  val keyMaker = (owner: String, ranking: String) => s"ow::$owner::rnk::$ranking"
+  val keyMaker = (owner: String, ranking: String) => s"ow:$owner:rnk:$ranking"
 
   val RANKING_KEY = keyMaker
 
@@ -32,8 +32,6 @@ object MongoSchema {
   val RANKINGS = "owner_rankings"
 
   val MEMBERS = "owner_members"
-  val MEMBERS_RANKINGS = "owner_members_rankings"
-
 }
 
 import MongoSchema._
@@ -93,30 +91,24 @@ object MongoRanking {
 
 // MongoMember
 // id ->> owner + member
-case class MongoMember(_id: String)
+case class MongoMember(_id: String, rankings:Option[Seq[String]], opId:Option[String])
 
 object MongoMember {
 
-  def build(owner: String, member: String, opId: String) = {
-    MongoMember(keyMaker(owner, member))
+  def build(owner: String, member: String, rankings:Seq[String], opId: String) = {
+    MongoMember(keyMaker(owner, member), Some(rankings), Some(opId))
   }
 
   // Serializers
-  implicit val mongoMemberFormat: Format[MongoMember] = Json.format[MongoMember]
+  implicit val mongoMemberWrites: Writes[MongoMember] = Json.writes[MongoMember]
+
+  implicit val mongoMemberReads: Reads[MongoMember] = (
+    (__ \ "_id").read[String] and
+      (__ \ "rankings").readNullable[Seq[String]] and
+      (__ \ "opId").readNullable[String]
+    )(MongoMember.apply _)
 }
 
-// id ->> owner + member + ranking
-case class MongoMemberRanking(_id: String, opId: String)
-
-object MongoMemberRanking {
-
-  def build(owner: String, member: String, ranking: String, opId: String) = {
-    MongoMemberRanking("", opId)
-  }
-
-  // Serializers
-  implicit val mongoMemberRankingsFormat: Format[MongoMemberRanking] = Json.format[MongoMemberRanking]
-}
 
 
 

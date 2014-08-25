@@ -48,7 +48,7 @@ object HttpResults extends Loggable {
       )
   }
 
-  class ParamError private(val name: String, val msg: String) {
+  class ParamError private(val name: String, val msg: String, val additional: Option[String] = None) {
 
     override def hashCode() = name.hashCode
 
@@ -60,15 +60,18 @@ object HttpResults extends Loggable {
   }
 
   object ParamError {
-    def apply(name: String, msg: String) = new ParamError(name, msg)
+    def apply(name: String, msg: String, additional: Option[String] = None) = new ParamError(name, msg, additional)
   }
 
   private[this] val apiGlobalErrorMap = Map(
     "Invalid Json" -> "plyrhub.non.valid.body"
   )
 
-  def ApiRqParamError(errors: Seq[ParamError])(implicit lang:Lang) = {
-    ApiErrorResponse(BadRequest, ApiCode.E400_PARAM_ERROR_CODE, errors.map(e => s"${e.name} ... ${Messages(e.msg)(lang)}"))
+  private[this] def buildMessage(e: ParamError)(implicit lang:Lang) =
+    if (e.additional.nonEmpty) Messages(e.msg, e.additional.get)(lang) else Messages(e.msg)(lang)
+
+  def ApiRqParamError(errors: Seq[ParamError])(implicit lang: Lang) = {
+    ApiErrorResponse(BadRequest, ApiCode.E400_PARAM_ERROR_CODE, errors.map(e => s"${e.name} ... ${buildMessage(e)}"))
   }
 
   val API_GLOBAL_ERROR = (errors: Seq[String]) => {
@@ -84,12 +87,12 @@ object HttpResults extends Loggable {
     ApiErrorResponse(Unauthorized, ApiCode.E401_UNAUTHORIZED_ACCESS_CODE, errors)
   }
 
-  def ApiUnauthorizedError(errors: Seq[String])(implicit lang:Lang) = {
+  def ApiUnauthorizedError(errors: Seq[String])(implicit lang: Lang) = {
     ApiErrorResponse(Unauthorized, ApiCode.E401_UNAUTHORIZED_ACCESS_CODE, errors.map(e => Messages(e)(lang)))
   }
 
 
-  def ApiGenericError(errors: Seq[String])(implicit lang:Lang) = {
+  def ApiGenericError(errors: Seq[String])(implicit lang: Lang) = {
     ApiErrorResponse(InternalServerError, ApiCode.E500_SERVER_ERROR_CODE, errors.map(e => Messages(e)(lang)))
   }
 
