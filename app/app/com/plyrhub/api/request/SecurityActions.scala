@@ -16,7 +16,7 @@
 
 package com.plyrhub.api.request
 
-import com.plyrhub.api.utils.HttpResults._
+import ApiHttpResults._
 import com.plyrhub.core.context._
 import com.plyrhub.core.log.Loggable
 import play.api.i18n.Lang

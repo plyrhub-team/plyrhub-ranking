@@ -14,15 +14,15 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.ranking.controller
+package com.plyrhub.ranking.front.controller
 
 import com.plyrhub.api.request.ApiAction.DefaultAction
-import com.plyrhub.api.utils.ApiDefaults.ActionDefaults._
-import com.plyrhub.api.utils.HttpResults._
+import com.plyrhub.api.request.ApiDefaults.ActionDefaults._
+import com.plyrhub.api.request.ApiHttpResults._
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.core.protocol.ServiceSuccess
 import com.plyrhub.ranking.service.RankingCreator
-import com.plyrhub.ranking.service.protocol.{RankingAlreadyExist, RankingCreated, RankingCreationMsg}
+import com.plyrhub.ranking.service.RankingCreator._
 import play.api.mvc.{Controller, Result}
 
 object RankingController extends Controller with Loggable {

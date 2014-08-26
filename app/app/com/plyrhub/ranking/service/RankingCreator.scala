@@ -20,7 +20,11 @@ import akka.actor.{Actor, ActorLogging, ActorRef}
 import com.plyrhub.core.context.{OperationContext, Owner}
 import com.plyrhub.core.protocol._
 import com.plyrhub.core.utils.Misc
-import com.plyrhub.ranking.service.protocol.{RankingCreationMsg, RankingAlreadyExist, RankingCreated, RankingGenericError}
+import com.plyrhub.ranking.front.conf.RankingConfig.ModelConstraints
+import com.plyrhub.ranking.model.Ranking
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 
 import scala.concurrent.Future
 
@@ -30,7 +34,33 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 // TODO: review implicits
 
+object RankingCreator {
+
+  case class RankingCreationMsg(ranking: String, data: Ranking) extends ServiceMessage
+
+  object RankingCreationMsg {
+
+    // Serialization with combinators
+    implicit val rankingCreationMsgReads: Reads[RankingCreationMsg] = (
+      (__ \ "ranking").read[String]
+        (minLength[String](ModelConstraints.rnkIdMinLength) keepAnd maxLength[String](ModelConstraints.rnkIdMaxLength)) and
+        (__ \ "data").read[Ranking]
+      )(RankingCreationMsg.apply _)
+  }
+
+
+  case class RankingCreated(rnk: String) extends ServiceSuccess
+
+  case class RankingAlreadyExist(rnk: String) extends ServiceSuccess
+
+  case class RankingGenericError(rnk: String, cause: String) extends ServiceSuccess
+
+}
+
+
 class RankingCreator extends Actor with ActorLogging {
+
+  import com.plyrhub.ranking.service.RankingCreator._
 
   override def receive = {
 

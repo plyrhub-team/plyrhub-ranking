@@ -16,7 +16,7 @@
 
 package com.plyrhub.ranking.model
 
-import com.plyrhub.ranking.conf.RankingConfig.ModelConstraints._
+import com.plyrhub.ranking.front.conf.RankingConfig.ModelConstraints._
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
 

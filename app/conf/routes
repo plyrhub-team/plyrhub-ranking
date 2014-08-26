@@ -5,10 +5,10 @@
 # Home page
 
 # Rankings
-PUT         /rankings/:ranking            com.plyrhub.ranking.controller.RankingController.createOrUpdate(ranking:String)
+PUT         /rankings/:ranking            com.plyrhub.ranking.front.controller.RankingController.createOrUpdate(ranking:String)
 
 # Members
-PUT         /members/:member              com.plyrhub.ranking.controller.MemberController.registrateMember(member:String)
-POST        /members/:member/score
+PUT         /members/:member              com.plyrhub.ranking.front.controller.MemberController.registrateMember(member:String)
+POST        /members/:member/score        com.plyrhub.ranking.front.controller.MemberController.score(member:String)
 
 GET         /assets/*file                 controllers.Assets.at(path="/public", file)

@@ -14,25 +14,14 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.api.utils
+package com.plyrhub.api.request
 
-import com.plyrhub.api.request._
 import com.plyrhub.core.context._
-import com.plyrhub.core.model.Lang
-import play.api.Play.current
-import play.api.libs.concurrent.Akka
 import play.api.mvc.RequestHeader
 
 import scala.concurrent.Future
 
 object ApiDefaults {
-
-  object i18nDefaults{
-
-    // Default Language
-    val defaultLang = Lang("en")
-
-  }
 
   object ActionDefaults{
 

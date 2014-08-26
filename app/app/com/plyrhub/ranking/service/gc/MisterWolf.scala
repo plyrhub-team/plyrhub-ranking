@@ -16,12 +16,27 @@
 
 package com.plyrhub.ranking.service.gc
 
-import akka.actor.{Props, Actor, ActorLogging}
+import akka.actor.{Actor, ActorLogging, Props}
 import com.plyrhub.core.context.OperationContext
 import com.plyrhub.core.protocol.StartOperation
-import com.plyrhub.ranking.service.protocol.MisterWolfProtocol.{FixMemberRegistration, FixRankingCreation}
+import com.plyrhub.ranking.model.{MemberScore, MemberRankings, Ranking}
+
+object MisterWolf {
+
+  sealed trait FixMeMisterWorlf
+
+  case class FixRankingCreation(owner:String, ranking:String, data:Ranking, opId:String) extends FixMeMisterWorlf
+
+  case class FixMemberRegistration(owner:String, member:String, data:MemberRankings, opId:String) extends FixMeMisterWorlf
+
+  case class FixMemberScoring(owner:String, member:String, data:MemberScore, opId:String) extends FixMeMisterWorlf
+
+  def props(): Props = Props(classOf[MisterWolf])
+}
 
 class MisterWolf extends Actor with ActorLogging {
+
+  import com.plyrhub.ranking.service.gc.MisterWolf._
 
   override def receive = {
 
@@ -35,6 +50,4 @@ class MisterWolf extends Actor with ActorLogging {
 
 }
 
-object MisterWolf {
-  def props(): Props = Props(new MisterWolf)
-}
+

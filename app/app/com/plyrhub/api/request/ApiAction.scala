@@ -18,7 +18,7 @@ package com.plyrhub.api.request
 
 import akka.actor.Actor
 import com.plyrhub.api.request.ApiOperationDefaults._
-import com.plyrhub.api.utils.HttpResults._
+import ApiHttpResults._
 import com.plyrhub.core.context._
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.core.model.Lang

@@ -16,9 +16,10 @@
 
 import java.io.File
 
-import com.plyrhub.api.utils.HttpResults._
+import com.plyrhub.api.request.ApiHttpResults
+import ApiHttpResults._
 import com.plyrhub.core.log.Loggable
-import com.plyrhub.ranking.conf.Starter
+import com.plyrhub.ranking.front.conf.Starter
 import play.api.Mode.Mode
 import play.api.mvc.RequestHeader
 import play.api.{Application, Configuration, GlobalSettings}

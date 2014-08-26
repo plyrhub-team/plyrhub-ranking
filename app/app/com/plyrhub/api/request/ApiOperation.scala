@@ -18,7 +18,7 @@ package com.plyrhub.api.request
 
 import akka.actor.SupervisorStrategy.Stop
 import akka.actor.{Actor, ActorRef, OneForOneStrategy, Props}
-import com.plyrhub.api.utils.HttpResults._
+import ApiHttpResults._
 import com.plyrhub.api.utils.Utils
 import com.plyrhub.core.PlyrhubRT
 import com.plyrhub.core.context.{ApiOperationContext, OperationContext}
@@ -156,6 +156,9 @@ object ApiRequestActor {
   def apply[S <: Actor : ClassTag](init: initBlockType, octx: OperationContext, message: ServiceMessage): Future[Either[ServiceFailure, ServiceSuccess]] = {
 
     // Prepare the ServiceActor
+    // TODO: change to allow to ways to use the service actor
+    //  -->> One Actor per System (or a Pool)
+    //  -->> One Actor per Request
     val rtActorClass = implicitly[ClassTag[S]].runtimeClass
     val targetProps = Props(rtActorClass)
 

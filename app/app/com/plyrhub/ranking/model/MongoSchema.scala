@@ -17,7 +17,7 @@
 package com.plyrhub.ranking.model
 
 import com.plyrhub.api.model.State
-import com.plyrhub.ranking.conf.RankingConfig.ModelConstraints._
+import com.plyrhub.ranking.front.conf.RankingConfig.ModelConstraints._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
@@ -30,6 +30,8 @@ object MongoSchema {
 
   val COLLECTIONS = "owner_cols"
   val RANKINGS = "owner_rankings"
+
+  val SCORES = "owner_scores"
 
   val MEMBERS = "owner_members"
 }
@@ -57,7 +59,7 @@ object MongoOwnerCollections {
 
 // MongoRanking
 // _id -> owner + rnk
-case class MongoRanking(_id: String, ranking:String, collections: Option[Seq[String]], platforms: Option[Seq[RankingPlatform]], properties: Option[Seq[RankingProp]], state: Option[State], opId: Option[String])
+case class MongoRanking(_id: String, ranking: String, collections: Option[Seq[String]], platforms: Option[Seq[RankingPlatform]], properties: Option[Seq[RankingProp]], state: Option[State], opId: Option[String])
 
 object MongoRanking {
 
@@ -91,11 +93,11 @@ object MongoRanking {
 
 // MongoMember
 // id ->> owner + member
-case class MongoMember(_id: String, rankings:Option[Seq[String]], opId:Option[String])
+case class MongoMember(_id: String, rankings: Option[Seq[String]], opId: Option[String])
 
 object MongoMember {
 
-  def build(owner: String, member: String, rankings:Seq[String], opId: String) = {
+  def build(owner: String, member: String, rankings: Seq[String], opId: String) = {
     MongoMember(keyMaker(owner, member), Some(rankings), Some(opId))
   }
 
@@ -109,6 +111,17 @@ object MongoMember {
     )(MongoMember.apply _)
 }
 
+// MongoScore
+// id ->> owner + member
+case class MongoScore(id: String, ranking: String, score: Int, confirmed: Boolean, opId: String)
 
+object MongoScore {
+
+  def build(owner: String, member: String, ranking: String, score:Int, confirmed:Boolean, opId: String) = {
+    MongoScore(keyMaker(owner, member), ranking, score, confirmed, opId)
+  }
+
+  implicit val mongoScoreFormat: Format[MongoScore] = Json.format[MongoScore]
+}
 
 

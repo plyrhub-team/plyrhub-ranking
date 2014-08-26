@@ -14,24 +14,26 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.ranking.controller
+package com.plyrhub.ranking.front.controller
 
 import com.plyrhub.api.request.ApiAction.DefaultAction
-import com.plyrhub.api.utils.ApiDefaults.ActionDefaults._
-import com.plyrhub.api.utils.HttpResults._
+import com.plyrhub.api.request.{ApiHttpResults, ApiDefaults}
+import ApiDefaults.ActionDefaults._
+import ApiHttpResults._
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.core.protocol.ServiceSuccess
 import com.plyrhub.ranking.service.{MemberScorer, MemberRegistrator, RankingCreator}
-import com.plyrhub.ranking.service.protocol._
+import com.plyrhub.ranking.service.MemberRegistrator._
 import play.api.mvc.{Controller, Result}
 
 object MemberController extends Controller with Loggable {
 
-  /*
-    Registrates a new Member
-   */
+
   val memberParams = Seq(MEMBER_ID, BODY)
 
+  /*
+    Registrates a new Member
+  */
   def registrateMember(member: String) =
 
     AuthAction.async {

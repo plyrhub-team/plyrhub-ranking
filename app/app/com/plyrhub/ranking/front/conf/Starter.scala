@@ -14,7 +14,7 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.ranking.conf
+package com.plyrhub.ranking.front.conf
 
 import com.plyrhub.api.codes.ApiParams_ZZ
 import com.plyrhub.core.log.Loggable

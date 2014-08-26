@@ -14,25 +14,18 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.api.conf
+package com.plyrhub.api.request
 
-import com.plyrhub.core.PlyrhubRT
-import play.Plugin
-import play.api.Application
-import play.api.libs.concurrent.Akka
+import akka.actor.{ActorRef, ActorSystem}
 
-import play.api.Play.current
+object ApiRT {
 
-class PlyrhubBootstrap(app: Application) extends Plugin {
+/*  private[core] var _mapActors: Map[String, ActorRef] = _
 
-  override def onStart() = {
+  def installActors(mapActors: Map[String, ActorRef]) = {
 
-    startupAkkaSystemForPlyrhub
+    _mapActors = actorSystem
 
-  }
-
-  def startupAkkaSystemForPlyrhub = {
-    PlyrhubRT.installRuntime(Akka.system)
-  }
+  }*/
 
 }

@@ -20,8 +20,12 @@ import akka.actor.{Actor, ActorLogging, ActorRef}
 import com.plyrhub.core.context.{OperationContext, Owner}
 import com.plyrhub.core.protocol._
 import com.plyrhub.core.utils.Misc
-import com.plyrhub.ranking.service.protocol.MisterWolfProtocol.FixMemberRegistration
-import com.plyrhub.ranking.service.protocol._
+import com.plyrhub.ranking.front.conf.RankingConfig.ModelConstraints
+import com.plyrhub.ranking.model.MemberRankings
+import com.plyrhub.ranking.service.gc.MisterWolf.FixMemberRegistration
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 
 import scala.concurrent.Future
 
@@ -31,7 +35,38 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 // TODO: review implicits
 
+object MemberRegistrator {
+
+  case class MemberRegistrationMsg(member: String, data: MemberRankings) extends ServiceMessage
+
+  object MemberRegistrationMsg {
+
+    // Serialization with combinators
+    implicit val memberRegistrationMsgReads: Reads[MemberRegistrationMsg] = (
+      (__ \ "member").read[String]
+        (minLength[String](ModelConstraints.memberIdMinLength) keepAnd maxLength[String](ModelConstraints.memberIdMaxLength)) and
+        (__ \ "data").read[MemberRankings]
+      )(MemberRegistrationMsg.apply _)
+  }
+
+  case class MemberRegistered(member: String) extends ServiceSuccess
+
+  case class MemberAlreadyExist(member: String) extends ServiceSuccess
+
+  case class MemberRegisteredInRankings(member: String) extends ServiceSuccess
+
+  case class MemberNonValidRankings(member: String, nonValidRankings: Seq[String]) extends ServiceSuccess
+
+  case class MemberGenericError(member: String, cause: String) extends ServiceSuccess
+
+  case class ExistingRankingsForMember(rankings: Seq[String]) extends ServiceSuccess
+
+}
+
+
 class MemberRegistrator extends Actor with ActorLogging {
+
+  import com.plyrhub.ranking.service.MemberRegistrator._
 
   override def receive = {
 
@@ -62,7 +97,7 @@ class MemberRegistrator extends Actor with ActorLogging {
 
       (memberRegistrationResult, rankingsSearchResult) match {
 
-        case (memberRegistered @ MemberRegistered(_), ExistingRankingsForMember(rankingsFound)) => {
+        case (memberRegistered@MemberRegistered(_), ExistingRankingsForMember(rankingsFound)) => {
 
           val rankingsNotFound = rankings.diff(rankingsFound)
           if (rankingsNotFound.size != 0) {
@@ -71,7 +106,7 @@ class MemberRegistrator extends Actor with ActorLogging {
 
             MemberNonValidRankings(member, rankingsNotFound)
           } else
-            // SUCCESS
+          // SUCCESS
             memberRegistered
         }
 

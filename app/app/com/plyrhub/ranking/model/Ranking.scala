@@ -17,7 +17,7 @@
 package com.plyrhub.ranking.model
 
 import com.plyrhub.api.model.State
-import com.plyrhub.ranking.conf.RankingConfig.ModelConstraints
+import com.plyrhub.ranking.front.conf.RankingConfig.ModelConstraints
 import play.api.data.validation.ValidationError
 
 import scala.util.{Try, Failure, Success}

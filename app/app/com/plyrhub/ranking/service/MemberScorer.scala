@@ -20,7 +20,12 @@ import akka.actor.{Actor, ActorLogging, ActorRef}
 import com.plyrhub.core.context.{OperationContext, Owner}
 import com.plyrhub.core.protocol._
 import com.plyrhub.core.utils.Misc
-import com.plyrhub.ranking.service.protocol._
+import com.plyrhub.ranking.front.conf.RankingConfig.ModelConstraints
+import com.plyrhub.ranking.model.MemberScore
+import com.plyrhub.ranking.service.gc.MisterWolf.{FixMemberScoring, FixMemberRegistration}
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 
 import scala.concurrent.Future
 
@@ -30,7 +35,31 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 // TODO: review implicits
 
+object MemberScorer {
+
+  case class MemberScoreMsg(member: String, data: MemberScore) extends ServiceMessage
+
+  object MemberScoreMsg {
+
+    // Serialization with combinators
+    implicit val memberScoreMsgReads: Reads[MemberScoreMsg] = (
+      (__ \ "member").read[String]
+        (minLength[String](ModelConstraints.memberIdMinLength) keepAnd maxLength[String](ModelConstraints.memberIdMaxLength)) and
+        (__ \ "data").read[MemberScore]
+      )(MemberScoreMsg.apply _)
+  }
+
+  case class ScoreForSomeRankingsFailed() extends ServiceSuccess()
+
+  case class ScoreForSomeRankingsNotFoundInMember(rankings: Seq[String]) extends ServiceSuccess()
+
+  case class ScoreGenericError(member: String, cause: String) extends ServiceSuccess
+
+}
+
 class MemberScorer extends Actor with ActorLogging {
+
+  import MemberScorer._
 
   override def receive = {
 
@@ -46,7 +75,7 @@ class MemberScorer extends Actor with ActorLogging {
     val owner = Owner(ctx.owner).get
     val member = message.member
     val score = message.data.score
-    val rankings = message.data.rankings
+    val rankings = message.data.rankings.rankings
 
     // save to mongo (with indicator of opId + id (Incremental)
     // verify rankings
@@ -54,52 +83,33 @@ class MemberScorer extends Actor with ActorLogging {
     // Ok ->>> sent to Redis Scorer
     // Fail ->>> Send to MisterWolf
 
-    // Redis Scorer
-    //  -> score
-    //  -> update Mongo (if fail ->) --->> doesn't matter we can reconstruct the ranking for the user (we have the data)
-    //                               --->> done through the recollector (looks for the non-confirmed operations and reconstrcut for that user)
-
-
-    // RegisterMember
-    val fRegisterMember = RankingRepo.registerMember(owner, member, rankings, uniqueRepoId)
+    // Save score for rankings
+    val fScoreForRankings = RankingRepo.saveScoreForRankings(owner, member, rankings, score, uniqueRepoId)
 
     // Look for the provided rankings to see in they exist
-    val fFindRankings = RankingRepo.findRankingsForMember(owner, member, rankings, uniqueRepoId)
+    val fRankingsVerification = RankingRepo.verifyRankingsOnMember(owner, member, rankings)
 
-    // Check if there were errors
-    // Check if the rankings were in the DB
-    // - if FAIL -> notify misterWolf and send back to user with failure
-    // - if SUCCESS -> send back to user with success
-    def fResult(memberRegistrationResult: ServiceSuccess, rankingsSearchResult: ServiceSuccess) = Future {
+    def fResult(scoringResult: ServiceSuccess, verificationResult: ServiceSuccess) = Future {
 
-      (memberRegistrationResult, rankingsSearchResult) match {
+      (scoringResult, verificationResult) match {
 
-        case (memberRegistered @ MemberRegistered(_), ExistingRankingsForMember(rankingsFound)) => {
-
-          val rankingsNotFound = rankings.diff(rankingsFound)
-          if (rankingsNotFound.size != 0) {
-            // Notify MisterWolf
-            RankingServiceRT.fixme(FixMemberRegistration(owner, member, message.data, uniqueRepoId))
-
-            MemberNonValidRankings(member, rankingsNotFound)
-          } else
-            // SUCCESS
-            memberRegistered
+        case (SimpleSuccess(), SimpleSuccess()) => {
+          // Tell redis to score
+          RankingServiceRT.score(RedisScorer.Score(owner, member, rankings, score, uniqueRepoId))
+          SimpleSuccess()
         }
 
-        case (mrr, rrr) => {
+        case (scoringMaybeError, verificactionMaybeError) => {
 
           // Notify MisterWolf
-          RankingServiceRT.fixme(FixMemberRegistration(owner, member, message.data, uniqueRepoId))
+          RankingServiceRT.fixme(FixMemberScoring(owner, member, message.data, uniqueRepoId))
 
-          // Identify the type of error to return
-          (mrr, rrr) match {
-            case (memberAlreadyRegistered@MemberAlreadyExist(_), _) =>
-              memberAlreadyRegistered
-            case (MemberGenericError(_, cause), _) =>
-              SimpleFailure(cause)
-            case (MemberRegistered(_), MemberGenericError(_, cause)) =>
-              SimpleFailure(cause)
+          // Identify the error
+          (scoringMaybeError, verificactionMaybeError) match {
+            case (ScoreForSomeRankingsFailed(), _) => scoringMaybeError
+            case (ScoreGenericError(_, cause), _) => SimpleFailure(cause)
+            case (_, ScoreForSomeRankingsNotFoundInMember(_)) => verificactionMaybeError
+            case (_, ScoreGenericError(_, cause)) => SimpleFailure(cause)
             case (err1, err2) =>
               // This should not happen
               // TODO: log the types
@@ -109,16 +119,17 @@ class MemberScorer extends Actor with ActorLogging {
       }
     }
 
+
     // Combine Futures
     val fServiceResult = for {
-      memberRegistrationResult <- fRegisterMember
-      rankingsSearchResult <- fFindRankings
-      result <- fResult(memberRegistrationResult, rankingsSearchResult)
+      scoringResult <- fScoreForRankings
+      verificationResult <- fRankingsVerification
+      result <- fResult(scoringResult, verificationResult)
     } yield result
-
 
     // Return
     fServiceResult.map(Complete(sender, _))
 
   }
+
 }

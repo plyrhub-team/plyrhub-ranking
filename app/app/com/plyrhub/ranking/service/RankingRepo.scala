@@ -16,11 +16,14 @@
 
 package com.plyrhub.ranking.service
 
-import com.plyrhub.core.protocol.ServiceSuccess
+import com.plyrhub.core.protocol.{SimpleSuccess, ServiceSuccess}
 import com.plyrhub.core.store.mongo.{JSONCollection, MongoConfig}
 import com.plyrhub.core.store.redis.RedisConfig
-import com.plyrhub.ranking.model.{MongoMember, MongoRanking, MongoSchema, Ranking}
-import com.plyrhub.ranking.service.protocol._
+import com.plyrhub.ranking.model._
+import com.plyrhub.ranking.service.RankingCreator._
+import com.plyrhub.ranking.service.MemberRegistrator._
+import com.plyrhub.ranking.service.MemberScorer._
+import play.api.libs.iteratee.Enumerator
 import play.api.libs.json.{JsString, JsArray, Json}
 import reactivemongo.core.errors.DatabaseException
 
@@ -96,11 +99,40 @@ object RankingRepo extends MongoConfig with RedisConfig {
 
   }
 
-  def storePosition(ranking: String, member: String, score: Long): Future[Long] = {
+  def saveScoreForRankings(owner:String, member:String, rankings:Seq[String], score:Int, opId:String) = {
 
-    //import redis.dispatcher
-    redis.zAdd(ranking, (member, score))
+    def scoresCol: JSONCollection = mongoDB.collection[JSONCollection](SCORES)
 
+    val p = Promise[ServiceSuccess]
+
+    val scores = rankings.map(r => MongoScore.build(owner, member, r, score, false, opId))
+
+    val f = scoresCol
+      .bulkInsert(Enumerator.enumerate(scores))
+      .map(inserted => if (inserted == rankings.length) p.success(SimpleSuccess()) else p.success(ScoreForSomeRankingsFailed()))
+
+    f.onFailure {
+      case x =>
+        p.success(ScoreGenericError(member, x.getMessage))
+    }
+
+    p.future
+  }
+
+  def verifyRankingsOnMember(owner:String, member:String, rankings:Seq[String]) = {
+
+    def membersCol: JSONCollection = mongoDB.collection[JSONCollection](MEMBERS)
+
+    val p = Promise[ServiceSuccess]
+
+    val f = membersCol.
+
+    f.onFailure {
+      case x =>
+        p.success(MemberGenericError(member, x.getMessage))
+    }
+
+    p.future
   }
 }
 

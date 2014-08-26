@@ -14,15 +14,24 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.ranking.service.protocol
+package com.plyrhub.ranking.boot
 
-import com.plyrhub.ranking.model.{MemberRankings, Ranking}
+import com.plyrhub.core.PlyrhubRT
+import play.Plugin
+import play.api.Application
+import play.api.Play.current
+import play.api.libs.concurrent.Akka
 
-object MisterWolfProtocol {
+class RankingBootstrap(app: Application) extends Plugin {
 
-  sealed trait FixMeMisterWorlf
+  override def onStart() = {
 
-  case class FixRankingCreation(owner:String, ranking:String, data:Ranking, opId:String) extends FixMeMisterWorlf
+    startupAkkaSystemForPlyrhub
 
-  case class FixMemberRegistration(owner:String, member:String, data:MemberRankings, opId:String) extends FixMeMisterWorlf
+  }
+
+  def startupAkkaSystemForPlyrhub = {
+    PlyrhubRT.installRuntime(Akka.system)
+  }
+
 }

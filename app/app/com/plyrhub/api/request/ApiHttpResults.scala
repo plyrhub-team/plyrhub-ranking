@@ -14,18 +14,17 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.api.utils
+package com.plyrhub.api.request
 
 import com.plyrhub.api.codes.ApiCode
 import com.plyrhub.api.model.Response._
 import com.plyrhub.api.model.{Data, Pagination, Response, Result}
 import com.plyrhub.core.log.Loggable
-import play.api.i18n.{Messages, Lang}
-import play.api.i18n.Messages.Message
-import play.api.libs.json.{Writes, Json}
+import play.api.i18n.{Lang, Messages}
+import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Results._
 
-object HttpResults extends Loggable {
+object ApiHttpResults extends Loggable {
 
   val API_SIMPLE_SUCCESS = Ok("")
   val API_SIMPLE_CREATED = Created("")
