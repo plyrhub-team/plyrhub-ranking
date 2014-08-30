@@ -17,9 +17,6 @@
 package com.plyrhub.ranking.service
 
 import akka.actor.{Actor, ActorLogging, Props}
-import com.plyrhub.ranking.service.RankingRepo._
-
-import scala.concurrent.Future
 
 object RedisScorer{
 
@@ -29,8 +26,14 @@ object RedisScorer{
 
 }
 
+import RedisScorer._
+
 class RedisScorer extends Actor with ActorLogging{
-  override def receive = ???
+  override def receive = {
+
+    case scoreInfo @ Score(owner, member, rankings, score, uniqueRepoId) => log.debug(s"score: $scoreInfo")
+
+  }
 
   // Redis Scorer
   //  -> score

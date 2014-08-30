@@ -23,3 +23,22 @@ object Misc {
   def uniqueID = UUID.randomUUID().toString
 
 }
+
+
+/*
+
+    // Taken from: http://instagram-engineering.tumblr.com/post/10853187575/sharding-ids-at-instagram
+    // TODO -- improve the implementation
+    private long calculateId(String key, long nextVal){
+
+        long currentMillis = new Date().getTime() - epochInitAt;
+
+        long result = currentMillis << 23;                      // 41 bits for time
+        result = result | (startValues.get(key) << 10);         // 13 bits for "theService"
+        result = result | (nextVal % 1024);                     // 10 bits for "theNextVal"
+
+        return result;
+    }
+
+
+ */

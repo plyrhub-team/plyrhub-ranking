@@ -24,16 +24,19 @@ import play.api.libs.json._
 
 object MongoSchema {
 
-  val keyMaker = (owner: String, ranking: String) => s"ow:$owner:rnk:$ranking"
+  private[this] val keyMakerSimple = (owner: String, element:String, value: String) => s"ow:$owner:$element:$value"
 
-  val RANKING_KEY = keyMaker
+  val COLLECTIONS_KEY = keyMakerSimple(_:String,"col", _:String)
+  val SCORE_KEY = keyMakerSimple(_:String, "scr", _:String)
+
+  private[this] val collectionKeyMaker = (owner: String, collection:String) => s"${owner}_${collection}"
+
+  val RANKINGS_COLLECTION_MAKER = collectionKeyMaker(_:String, "rankings")
+  val MEMBERS_COLLECTION_MAKER = collectionKeyMaker(_:String, "members")
+  val SCORES_COLLECTION_MAKER = collectionKeyMaker(_:String, "scores")
 
   val COLLECTIONS = "owner_cols"
-  val RANKINGS = "owner_rankings"
 
-  val SCORES = "owner_scores"
-
-  val MEMBERS = "owner_members"
 }
 
 import MongoSchema._
@@ -51,38 +54,33 @@ object MongoOwnerCollections {
     MongoOwnerCollections(key(owner), mongoCols)
   }
 
-  def key(owner: String) = keyMaker(owner, "col")
+  def key(owner: String) = COLLECTIONS_KEY(owner, "col")
 
   // Serializers
   implicit val mongoOwnerCollectionsFormat: Format[MongoOwnerCollections] = Json.format[MongoOwnerCollections]
 }
 
 // MongoRanking
-// _id -> owner + rnk
-case class MongoRanking(_id: String, ranking: String, collections: Option[Seq[String]], platforms: Option[Seq[RankingPlatform]], properties: Option[Seq[RankingProp]], state: Option[State], opId: Option[String])
+// _id -> ranking
+case class MongoRanking(_id: String, collections: Option[Seq[String]], platforms: Option[Seq[RankingPlatform]], properties: Option[Seq[RankingProp]], state: Option[State], opId: Option[String])
 
 object MongoRanking {
 
-  def build(owner: String, ranking: String, data: Ranking, opId: String) = {
+  def build(ranking: String, data: Ranking, opId: String) = {
 
     MongoRanking(
-      keyMaker(owner, ranking),
       ranking,
       Some(data.collections.map(_.collection)), Some(data.platforms),
       data.properties,
       Some(data.status),
       Some(opId))
-
   }
-
-  def key(owner: String, ranking: String) = keyMaker(owner, ranking)
 
   // Serializer
   implicit val mongoRankingWrites: Writes[MongoRanking] = Json.writes[MongoRanking]
 
   implicit val mongoRankingReads: Reads[MongoRanking] = (
     (__ \ "_id").read[String] and
-      (__ \ "ranking").read[String] and
       (__ \ "collections").readNullable[Seq[String]] and
       (__ \ "platforms").readNullable[Seq[RankingPlatform]] and
       (__ \ "properties").readNullable[Seq[RankingProp]] and
@@ -92,13 +90,13 @@ object MongoRanking {
 }
 
 // MongoMember
-// id ->> owner + member
+// id ->> member
 case class MongoMember(_id: String, rankings: Option[Seq[String]], opId: Option[String])
 
 object MongoMember {
 
-  def build(owner: String, member: String, rankings: Seq[String], opId: String) = {
-    MongoMember(keyMaker(owner, member), Some(rankings), Some(opId))
+  def build(member: String, rankings: Seq[String], opId: String) = {
+    MongoMember(member, Some(rankings), Some(opId))
   }
 
   // Serializers
@@ -113,12 +111,12 @@ object MongoMember {
 
 // MongoScore
 // id ->> owner + member
-case class MongoScore(id: String, ranking: String, score: Int, confirmed: Boolean, opId: String)
+case class MongoScore(member: String, ranking: String, score: Int, confirmed: Boolean, opId: String)
 
 object MongoScore {
 
-  def build(owner: String, member: String, ranking: String, score:Int, confirmed:Boolean, opId: String) = {
-    MongoScore(keyMaker(owner, member), ranking, score, confirmed, opId)
+  def build(member: String, ranking: String, score:Int, confirmed:Boolean, opId: String) = {
+    MongoScore(member, ranking, score, confirmed, opId)
   }
 
   implicit val mongoScoreFormat: Format[MongoScore] = Json.format[MongoScore]

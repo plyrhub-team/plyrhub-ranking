@@ -30,7 +30,7 @@ object MemberRankings {
     override def reads(json: JsValue) = {
 
       Try {
-        val rankings = (json \ "rankings").as[Seq[String]]
+        val rankings = (json \ "rankings").asOpt[Seq[String]].fold(json.as[Seq[String]])(rnks => rnks)
 
         if (rankings.length < memberRankingsMin || rankings.length > memberRankingsMax)
           throw new IllegalArgumentException("No valid field length")
@@ -40,8 +40,7 @@ object MemberRankings {
       } match {
         case Success(s) => JsSuccess(MemberRankings(s))
         case Failure(e: IllegalArgumentException) => JsError(Seq(JsPath() -> Seq(ValidationError("plyrhub.member.error.non.valid.rankings.length"))))
-        case Failure(thrown) =>
-          JsError(Seq(JsPath() -> Seq(ValidationError("plyrhub.member.error.non.valid.rankings"))))
+        case Failure(thrown) => JsError(Seq(JsPath() -> Seq(ValidationError("plyrhub.member.error.non.valid.rankings"))))
       }
 
     }

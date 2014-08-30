@@ -22,7 +22,7 @@ import com.plyrhub.core.protocol._
 import com.plyrhub.core.utils.Misc
 import com.plyrhub.ranking.front.conf.RankingConfig.ModelConstraints
 import com.plyrhub.ranking.model.MemberScore
-import com.plyrhub.ranking.service.gc.MisterWolf.{FixMemberScoring, FixMemberRegistration}
+import com.plyrhub.ranking.service.gc.MisterWolf.FixMemberScoring
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
@@ -49,9 +49,9 @@ object MemberScorer {
       )(MemberScoreMsg.apply _)
   }
 
-  case class ScoreForSomeRankingsFailed() extends ServiceSuccess()
+  case class ScoreRegistrationForSomeRankingsFailed() extends ServiceSuccess()
 
-  case class ScoreForSomeRankingsNotFoundInMember(rankings: Seq[String]) extends ServiceSuccess()
+  case class SomeRankingsNotRegisteredWithMember() extends ServiceSuccess()
 
   case class ScoreGenericError(member: String, cause: String) extends ServiceSuccess
 
@@ -59,7 +59,7 @@ object MemberScorer {
 
 class MemberScorer extends Actor with ActorLogging {
 
-  import MemberScorer._
+  import com.plyrhub.ranking.service.MemberScorer._
 
   override def receive = {
 
@@ -106,9 +106,9 @@ class MemberScorer extends Actor with ActorLogging {
 
           // Identify the error
           (scoringMaybeError, verificactionMaybeError) match {
-            case (ScoreForSomeRankingsFailed(), _) => scoringMaybeError
+            case (ScoreRegistrationForSomeRankingsFailed(), _) => scoringMaybeError
             case (ScoreGenericError(_, cause), _) => SimpleFailure(cause)
-            case (_, ScoreForSomeRankingsNotFoundInMember(_)) => verificactionMaybeError
+            case (_, SomeRankingsNotRegisteredWithMember()) => verificactionMaybeError
             case (_, ScoreGenericError(_, cause)) => SimpleFailure(cause)
             case (err1, err2) =>
               // This should not happen
@@ -118,7 +118,6 @@ class MemberScorer extends Actor with ActorLogging {
         }
       }
     }
-
 
     // Combine Futures
     val fServiceResult = for {

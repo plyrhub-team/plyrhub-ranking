@@ -30,17 +30,23 @@ import reactivemongo.core.errors.DatabaseException
 import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.{Future, Promise}
 
+// TODO: log non-business errors
+
 object RankingRepo extends MongoConfig with RedisConfig {
 
   import MongoSchema._
 
+  val RANKINGS_COLLECTION = (owner: String) => mongoDB.collection[JSONCollection](RANKINGS_COLLECTION_MAKER(owner))
+  val MEMBERS_COLLECTION = (owner: String) => mongoDB.collection[JSONCollection](MEMBERS_COLLECTION_MAKER(owner))
+  val SCORES_COLLECTION = (owner: String) => mongoDB.collection[JSONCollection](SCORES_COLLECTION_MAKER(owner))
+
   def createRanking(owner: String, ranking: String, data: Ranking, opId: String): Future[ServiceSuccess] = {
 
-    def rankingsCol: JSONCollection = mongoDB.collection[JSONCollection](RANKINGS)
+    def rankingsCol: JSONCollection = RANKINGS_COLLECTION(owner)
 
     val p = Promise[ServiceSuccess]
     val f = rankingsCol
-      .insert(MongoRanking.build(owner, ranking, data, opId))
+      .insert(MongoRanking.build(ranking, data, opId))
       .map(lastError => p.success(RankingCreated(ranking)))
 
     f.onFailure {
@@ -56,11 +62,11 @@ object RankingRepo extends MongoConfig with RedisConfig {
 
   def registerMember(owner: String, member: String, rankings: Seq[String], opId: String): Future[ServiceSuccess] = {
 
-    def membersCol: JSONCollection = mongoDB.collection[JSONCollection](MEMBERS)
+    def membersCol: JSONCollection = MEMBERS_COLLECTION(owner)
 
     val p = Promise[ServiceSuccess]
     val f = membersCol
-      .insert(MongoMember.build(owner, member, rankings, opId))
+      .insert(MongoMember.build(member, rankings, opId))
       .map(lastError => p.success(MemberRegistered(member)))
 
     f.onFailure {
@@ -76,19 +82,20 @@ object RankingRepo extends MongoConfig with RedisConfig {
 
   def findRankingsForMember(owner: String, member: String, rankings: Seq[String], opId: String): Future[ServiceSuccess] = {
 
-    def rankingsCol: JSONCollection = mongoDB.collection[JSONCollection](RANKINGS)
+    def rankingsCol: JSONCollection = RANKINGS_COLLECTION(owner)
 
     val p = Promise[ServiceSuccess]
 
-    val selector = Json.obj("_id" ->  Json.obj("$in" -> JsArray(Seq(rankings.map(r => JsString(RANKING_KEY(owner, r)))).flatten)))
-    val projection = Json.obj("ranking" -> 1)
+    val selector = Json.obj("_id" -> Json.obj("$in" -> JsArray(Seq(rankings.map(r => JsString(r))).flatten)))
+    val projection = Json.obj("_id" -> 1)
 
     val f =
       rankingsCol
         .find(selector, projection)
         .cursor[MongoRanking]
         .collect[Seq]()
-        .map(lmr => p.success(ExistingRankingsForMember(lmr.map(mr => mr.ranking))))
+        .map(lmr =>
+        p.success(ExistingRankingsForMember(lmr.map(mr => mr._id))))
 
     f.onFailure {
       case x =>
@@ -99,17 +106,17 @@ object RankingRepo extends MongoConfig with RedisConfig {
 
   }
 
-  def saveScoreForRankings(owner:String, member:String, rankings:Seq[String], score:Int, opId:String) = {
+  def saveScoreForRankings(owner: String, member: String, rankings: Seq[String], score: Int, opId: String) = {
 
-    def scoresCol: JSONCollection = mongoDB.collection[JSONCollection](SCORES)
+    def scoresCol: JSONCollection = SCORES_COLLECTION(owner)
 
     val p = Promise[ServiceSuccess]
 
-    val scores = rankings.map(r => MongoScore.build(owner, member, r, score, false, opId))
+    val scores = rankings.map(r => MongoScore.build(member, r, score, false, opId))
 
     val f = scoresCol
       .bulkInsert(Enumerator.enumerate(scores))
-      .map(inserted => if (inserted == rankings.length) p.success(SimpleSuccess()) else p.success(ScoreForSomeRankingsFailed()))
+      .map(inserted => if (inserted == rankings.length) p.success(SimpleSuccess()) else p.success(ScoreRegistrationForSomeRankingsFailed()))
 
     f.onFailure {
       case x =>
@@ -119,21 +126,37 @@ object RankingRepo extends MongoConfig with RedisConfig {
     p.future
   }
 
-  def verifyRankingsOnMember(owner:String, member:String, rankings:Seq[String]) = {
+  def verifyRankingsOnMember(owner: String, member: String, rankings: Seq[String]) = {
 
-    def membersCol: JSONCollection = mongoDB.collection[JSONCollection](MEMBERS)
+    def membersCol: JSONCollection = MEMBERS_COLLECTION(owner)
 
     val p = Promise[ServiceSuccess]
 
-    val f = membersCol.
+    val selector = Json.obj(
+      "_id" -> JsString(member),
+      "rankings" -> Json.obj("$all" -> JsArray(Seq(rankings.map(r => JsString(r))).flatten))
+    )
+    val projection = Json.obj("_id" -> 1)
+
+    val f =
+      membersCol
+        .find(selector, projection)
+        .cursor[MongoMember]
+        .collect[Seq]()
+
+    f.onSuccess {
+      case m => if (m.length > 0) p.success(SimpleSuccess()) else p.success(SomeRankingsNotRegisteredWithMember())
+    }
 
     f.onFailure {
       case x =>
-        p.success(MemberGenericError(member, x.getMessage))
+        p.success(ScoreGenericError(member, x.getMessage))
     }
 
     p.future
   }
+
+
 }
 
 

@@ -21,7 +21,8 @@ import com.plyrhub.api.request.{ApiHttpResults, ApiDefaults}
 import ApiDefaults.ActionDefaults._
 import ApiHttpResults._
 import com.plyrhub.core.log.Loggable
-import com.plyrhub.core.protocol.ServiceSuccess
+import com.plyrhub.core.protocol.{SimpleSuccess, ServiceSuccess}
+import com.plyrhub.ranking.service.MemberScorer.{ScoreRegistrationForSomeRankingsFailed, SomeRankingsNotRegisteredWithMember, MemberScoreMsg}
 import com.plyrhub.ranking.service.{MemberScorer, MemberRegistrator, RankingCreator}
 import com.plyrhub.ranking.service.MemberRegistrator._
 import play.api.mvc.{Controller, Result}
@@ -70,11 +71,9 @@ object MemberController extends Controller with Loggable {
 
         val successBlock: PartialFunction[ServiceSuccess, Result] = {
 
-          case MemberRegistered(member: String) => API_SIMPLE_CREATED
-          case MemberAlreadyExist(member: String) => ApiRqParamError(Seq(ParamError(member, "plyrhub.member.already.exists")))
-          case MemberNonValidRankings(member: String, nonValidRankings: Seq[String]) => {
-            ApiRqParamError(Seq(ParamError(member, "plyrhub.member.non.valid.rankings", Some(nonValidRankings.mkString(",")))))
-          }
+          case SimpleSuccess() => API_SIMPLE_SUCCESS
+          case SomeRankingsNotRegisteredWithMember() => ApiRqParamError(Seq(ParamError(member, "plyrhub.score.rankings.not.registrered.with.member")))
+          case ScoreRegistrationForSomeRankingsFailed() => ApiRqParamError(Seq(ParamError(member, "plyrhub.score.error.registering.score")))
         }
 
         DefaultAction()

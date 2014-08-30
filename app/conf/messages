@@ -51,3 +51,9 @@ plyrhub.member.error.non.valid.rankings = los rankings indicados no son válidos
 # MemberController
 plyrhub.member.already.exists = el usuario ya está registrado
 plyrhub.member.non.valid.rankings = los siguientes rankings no existen: {0}
+
+# ScoreController
+plyrhub.score.rankings.not.registrered.with.member = el usuario o alguno de los rankings indicados para él no están registrados
+plyrhub.score.error.registering.score = sucedió un error al registrar la puntuación en alguno de los rankings
+
+

@@ -40,7 +40,7 @@ object ApiDefaults {
     // Owner Identification
     val ownerLoader: RequestHeader => Future[ApiOwner] =
       request =>
-        Future.successful(Owner("DEV-OWNER"))
+        Future.successful(Owner("DEV_OWNER"))
 
     val noOwnerLoader: RequestHeader => Future[ApiOwner] =
       request =>
@@ -51,7 +51,7 @@ object ApiDefaults {
     // User Identification
     val userLoader: RequestHeader => Future[ApiUser] =
       request =>
-        Future.successful(User("DEV-USER", Profile(Map())))
+        Future.successful(User("DEV_USER", Profile(Map())))
 
     val noUserLoader: RequestHeader => Future[ApiUser] =
       request =>
