@@ -57,3 +57,11 @@ object MemberScore {
   implicit val memberScoreReads: Reads[MemberScore] = Json.reads[MemberScore]
   implicit val memberScoreWrites = Json.writes[MemberScore]
 }
+
+sealed abstract class PlaceInRanking (val place:String)
+case class PlaceTop() extends PlaceInRanking("T")
+case class PlaceBottom() extends PlaceInRanking("B")
+case class PlaceMember() extends PlaceInRanking("M")
+
+case class MemberInRanking(id:String, position:Double, score:Double, place:PlaceInRanking)
+

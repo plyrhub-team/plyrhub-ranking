@@ -17,21 +17,24 @@
 package com.plyrhub.ranking.service
 
 import akka.actor.{Actor, ActorLogging, Props}
+import com.plyrhub.core.protocol.{ServiceSuccess, ServiceFailure}
 
-object RedisScorer{
+import scala.concurrent.ExecutionContext.Implicits._
 
-  case class Score(owner:String, member:String, rankings:Seq[String], score:Int, opId:String)
+object RedisScorer {
+
+  case class Score(owner: String, member: String, rankings: Seq[String], score: Int, opId: String)
 
   def props(): Props = Props(classOf[RedisScorer])
 
 }
 
-import RedisScorer._
+import com.plyrhub.ranking.service.RedisScorer._
 
-class RedisScorer extends Actor with ActorLogging{
+class RedisScorer extends Actor with ActorLogging {
   override def receive = {
 
-    case scoreInfo @ Score(owner, member, rankings, score, uniqueRepoId) => log.debug(s"score: $scoreInfo")
+    case score: Score => storeScoreForRanking(score)
 
   }
 
@@ -40,13 +43,48 @@ class RedisScorer extends Actor with ActorLogging{
   //  -> update Mongo (if fail ->) --->> doesn't matter we can reconstruct the ranking for the user (we have the data)
   //                               --->> done through the recollector (looks for the non-confirmed operations and reconstrcut for that user)
 
-/*
-  def storePosition(ranking: String, member: String, score: Long): Future[Long] = {
+  def storeScoreForRanking(score: Score) = {
 
-    //import redis.dispatcher
-    redis.zAdd(ranking, (member, score))
+    val owner = score.owner
+    val member = score.member
+    val opId = score.opId
+
+    score.rankings.map(r => {
+
+      // Annotate Score
+      RankingRepo
+        .annotateScore(score.owner, score.member, r, score.score)
+        .map(result => {
+        result.fold(manageRedisFailure, s => manageRedisSuccess(owner, member, r, opId))
+      })
+
+    })
+  }
+
+
+  def manageRedisFailure(f: ServiceFailure) = {
+
+    // log the error
+    // Wait a little and repeat
+    log.error("Error annotating to redis")
 
   }
-*/
+
+  def manageRedisSuccess(owner: String, member: String, ranking: String, opId: String) = {
+
+    // It was annotated, so tell Mongo it was done to pull it out from the reconstruction process
+    RankingRepo
+      .commitScoreForRanking(owner, member, ranking, opId)
+      .map(result =>
+      result.fold(manageMongoFailure, manageMongoSuccess))
+  }
+
+  def manageMongoFailure(f:ServiceFailure) = {
+    log.error("Failure")
+  }
+
+  def manageMongoSuccess(s:ServiceSuccess) = {
+    log.error("Success")
+  }
 
 }

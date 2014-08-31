@@ -14,12 +14,10 @@
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.plyrhub.core.store.redis
+package com.plyrhub.ranking.model
 
-import scredis.Redis
+object RedisSchema {
 
-trait RedisConfig {
-
-  lazy val redisDB = Redis()
+  val RANKING_ID = (owner:String, ranking:String) => s"${owner}_$ranking"
 
 }

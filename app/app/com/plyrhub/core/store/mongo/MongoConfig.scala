@@ -22,8 +22,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 trait MongoConfig {
 
-  lazy val driver = new MongoDriver
-  lazy val connection = driver.connection(List("localhost"))
+  private[this] lazy val driver = new MongoDriver
+  private[this] lazy val connection = driver.connection(List("localhost"))
   lazy val mongoDB = DB("plyrhub", connection)
 
 }
