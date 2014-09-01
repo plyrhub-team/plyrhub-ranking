@@ -19,13 +19,35 @@ package com.plyrhub.ranking.service
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import com.plyrhub.core.context.{OperationContext, Owner}
 import com.plyrhub.core.protocol._
+import com.plyrhub.ranking.front.conf.RankingConfig.{ParametersQSConstraints, ModelConstraints}
 import com.plyrhub.ranking.model._
-
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 import scala.concurrent.Future
+
+import scala.concurrent.ExecutionContext.Implicits._
 
 object RankingRetriever {
 
-  case class RankingQueryMsg(ranking: String, member: String, fromTop: Int, fromBottom: Int, platform: String) extends ServiceMessage
+  case class RankingQueryMsg(ranking: String, member: String, fromTop: Int, fromBottom: Int, platform: Option[String]) extends ServiceMessage
+
+  object RankingQueryMsg {
+
+    // Serialization with combinators
+    implicit val rankingQueryMsgReads: Reads[RankingQueryMsg] = (
+      (__ \ "ranking").read[String]
+        (minLength[String](ModelConstraints.rnkIdMinLength) keepAnd maxLength[String](ModelConstraints.rnkIdMaxLength)) and
+        (__ \ "member").read[String]
+          (minLength[String](ModelConstraints.memberIdMinLength) keepAnd maxLength[String](ModelConstraints.memberIdMaxLength)) and
+        (__ \ "fromTop").read[Int]
+          (min[Int](ParametersQSConstraints.fromTopMin) keepAnd max[Int](ParametersQSConstraints.fromTopMax)) and
+        (__ \ "fromBottom").read[Int]
+          (min[Int](ParametersQSConstraints.fromBottomMin) keepAnd max[Int](ParametersQSConstraints.fromBottomMax)) and
+        (__ \ "platform").readNullable[String]
+          (minLength[String](ModelConstraints.rnkPlatformIdMin) keepAnd maxLength[String](ModelConstraints.rnkPlatformIdMax))
+      )(RankingQueryMsg.apply _)
+  }
 
   case class RankingsQueryResult(membersInRanking: List[MemberInRanking]) extends ServiceSuccess
 

@@ -108,6 +108,7 @@ class MemberRegistrator extends Actor with ActorLogging {
           } else
           // SUCCESS
             memberRegistered
+          // TODO: -> add 0 to Redis in each ranking
         }
 
         case (mrr, rrr) => {

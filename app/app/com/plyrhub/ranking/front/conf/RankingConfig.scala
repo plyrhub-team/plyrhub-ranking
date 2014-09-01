@@ -20,6 +20,18 @@ import com.netflix.config.scala.DynamicIntProperty
 
 object RankingConfig {
 
+  object ParametersQSConstraints {
+
+    def fromTop = DynamicIntProperty("api.query.string.from.top", 5).get
+    def fromTopMin = DynamicIntProperty("api.query.string.from.top.min", 0).get
+    def fromTopMax = DynamicIntProperty("api.query.string.from.top.max", 100).get
+    
+    def fromBottom = DynamicIntProperty("api.query.string.from.bottom", 5).get
+    def fromBottomMin = DynamicIntProperty("api.query.string.from.bottom.min", 0).get
+    def fromBottomMax = DynamicIntProperty("api.query.string.from.bottom.max", 100).get
+
+  }
+
   object ModelConstraints {
 
     // Ranking

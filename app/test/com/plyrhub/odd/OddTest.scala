@@ -79,6 +79,7 @@ class OddTest {
     }
 
     val xxx = ("fromBottom", JsNumber(9))
+    val xxx2 = "fromBottom" -> JsNumber(9)
 
     val xxx1 = "pag" -> JsObject(Seq(
       "count" -> e[Int]("count"),
@@ -98,6 +99,24 @@ class OddTest {
     val jj = JsObject(elem.map{case (k,v) => k -> v})
 
     assert(1==1)
+
+  }
+
+  object a {
+    val x = 9
+  }
+
+  @Test
+  def threeTest() = {
+
+    val f = () => a
+
+    import f.apply
+
+    println("")
+
+
+
 
   }
 

@@ -29,8 +29,9 @@ object ApiDefaults {
     val RANKING_ID = Param[P, String]("ranking")
     val MEMBER_ID = Param[P, String]("member")
     val BODY = Param[B, B]("data")
-    val FROM_TOP = Param[Q, Int]("fromTop", 5)
-    val FROM_BOTTOM = Param[Q, Int]("fromBottom", 5)
+    def FROM_TOP(default:Int) = Param[Q, Int]("fromTop", default)
+    def FROM_BOTTOM(default:Int) = Param[Q, Int]("fromBottom", default)
+    val PLATFORM = Param[Q, String]("platform", "")
     val STATE_TRUE = Param[H, Boolean]("state", true)
     val STATE_FALSE = Param[H, Boolean]("state", false)
 

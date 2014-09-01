@@ -19,9 +19,13 @@ package com.plyrhub.ranking.front.controller
 import com.plyrhub.api.request.ApiAction.DefaultAction
 import com.plyrhub.api.request.ApiDefaults.ActionDefaults._
 import com.plyrhub.api.request.ApiHttpResults._
+import com.plyrhub.api.request.{Q, Param}
 import com.plyrhub.core.log.Loggable
 import com.plyrhub.core.protocol.ServiceSuccess
-import com.plyrhub.ranking.service.RankingCreator
+import com.plyrhub.ranking.front.conf.RankingConfig
+import com.plyrhub.ranking.model.MemberInRanking
+import com.plyrhub.ranking.service.RankingRetriever.{RankingsQueryResult, RankingQueryMsg}
+import com.plyrhub.ranking.service.{RankingRetriever, RankingCreator}
 import com.plyrhub.ranking.service.RankingCreator._
 import play.api.mvc.{Controller, Result}
 
@@ -30,9 +34,9 @@ object RankingController extends Controller with Loggable {
   /*
     Creates a new ranking
    */
-  val createOrUpdateParams = Seq(RANKING_ID, BODY)
+  val createParams = Seq(RANKING_ID, BODY)
 
-  def createOrUpdate(rnk: String) =
+  def create(rnk: String) =
 
     AuthAction.async {
 
@@ -44,11 +48,40 @@ object RankingController extends Controller with Loggable {
         }
 
         DefaultAction()
-          .withParams(createOrUpdateParams)
+          .withParams(createParams)
           .withPathValues(RANKING_ID.seedMap(rnk))
           .withSuccessBlock(successBlock)
           .launch[RankingCreationMsg, RankingCreator]
 
+    }
+
+  /*
+    Retrieves members in a ranking
+   */
+
+  val queryParams = Seq(
+    RANKING_ID,
+    FROM_TOP(RankingConfig.ParametersQSConstraints.fromTop),
+    FROM_BOTTOM(RankingConfig.ParametersQSConstraints.fromBottom),
+    PLATFORM,
+    Param[Q, String]("member", "")
+  )
+
+  def query(ranking: String) =
+
+    AuthAction.async {
+      implicit request =>
+
+        val successBlock: PartialFunction[ServiceSuccess, Result] = {
+          case RankingsQueryResult(membersInRanking: List[MemberInRanking]) =>
+            API_SIMPLE_CREATED
+        }
+
+        DefaultAction()
+          .withParams(queryParams)
+          .withSuccessBlock(successBlock)
+          .withPathValues(RANKING_ID.seedMap(ranking))
+          .launch[RankingQueryMsg, RankingRetriever]
     }
 
 }
