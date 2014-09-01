@@ -91,25 +91,23 @@ class RankingRetriever extends Actor with ActorLogging {
                  memberScore: Option[Double]) = Future {
 
       val buildMember: (String, Double) = memberScore.fold((memberQ, 0D))(s => (memberQ, s))
-      val mbrsFromDB = (topMembers.filter(_._1 != memberQ) ::: List(buildMember) ::: bottomMembers.filter(_._1 != memberQ)).sortBy(_._2).distinct
+      val mbrsFromDB = (topMembers.filter(_._1 != memberQ) ::: List(buildMember) ::: bottomMembers.filter(_._1 != memberQ)).sortWith((e1,e2) => e1._2 > e2._2).distinct
 
-      val zipHelper =
+      val zones =
         if ((fromTopQ + fromBottomQ) < mbrsFromDB.length) {
-
-          def interpolateMemberPosition: (Int, PlaceInRanking) =
-            (memberPosition.fold(fromTopQ + 1)(_.toInt), PlaceMember())
-
-          (getTopRange(fromTopQ) :+ interpolateMemberPosition) ++ getBottomRange(fromBottomQ, cardinality.toInt)
+          (fromTopQ+1, fromBottomQ)
         }
         else {
           val half = mbrsFromDB.length / 2
-          val zones = if ((mbrsFromDB.length % 2) == 0) (half, half) else (half + 1, half)
-
-          getTopRange(zones._1) ++ getBottomRange(zones._2, mbrsFromDB.length)
+          //(fromTop,fromBottom) -> infered
+          if ((mbrsFromDB.length % 2) == 0) (half, half) else (half + 1, half)
         }
 
+      val zipHelper = getTopRange(zones._1) ++ getBottomRange(zones._2, cardinality.toInt)
+
       // (member, score),(position, placeInRanking)
-      def toMember(m: ((String, Double), (Int, PlaceInRanking))) = MemberInRanking(m._1._1, m._1._2.toInt, m._2._1, m._2._2)
+      def toMember(m: ((String, Double), (Int, PlaceInRanking))) =
+        MemberInRanking(m._1._1, m._1._2.toInt, m._2._1, if (m._1._1 == memberQ) PlaceMember() else m._2._2)
 
       RankingsQueryResult(mbrsFromDB.zip(zipHelper).map(toMember))
     }
