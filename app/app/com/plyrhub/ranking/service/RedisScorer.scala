@@ -66,21 +66,21 @@ class RedisScorer extends Actor with ActorLogging {
 
     // log the error
     // Wait a little and repeat
-    //log.error("Error annotating to redis")
+    log.error("Error annotating to redis")
 
   }
 
   def manageRedisSuccess(owner: String, member: String, ranking: String, opId: String) = {
 
     // It was annotated, so tell Mongo it was done to pull it out from the reconstruction process
-/*    RankingRepo
+    RankingRepo
       .commitScoreForRanking(owner, member, ranking, opId)
       .map(result =>
-      result.fold(manageMongoFailure, manageMongoSuccess))*/
+      result.fold(manageMongoFailure, manageMongoSuccess))
   }
 
   def manageMongoFailure(f:ServiceFailure) = {
-    //log.error("Failure")
+    log.error("Failure")
   }
 
   def manageMongoSuccess(s:ServiceSuccess) = {
