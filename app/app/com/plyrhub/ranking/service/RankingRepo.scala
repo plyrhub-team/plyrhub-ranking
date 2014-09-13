@@ -135,6 +135,26 @@ object RankingRepo extends MongoConfig with RedisConfig {
 
     val p = Promise[Either[ServiceFailure, ServiceSuccess]]
 
+    val scores = Seq(ranking).map(r => MongoScore.build(member, r, 0, true, opId+"a"))
+
+    val f = scoresCol
+      .bulkInsert(Enumerator.enumerate(scores))
+      .map(inserted => if (inserted == 1) p.success(Right(SimpleSuccess())) else p.success(Left(SimpleFailure("xxxxx"))))
+
+    f.onFailure {
+      case x =>
+        p.success(Left(SimpleFailure(x.getMessage)))
+    }
+
+    p.future
+  }
+
+  def commitScoreForRanking2(owner: String, member: String, ranking: String, opId: String) = {
+
+    def scoresCol: JSONCollection = SCORES_COLLECTION(owner)
+
+    val p = Promise[Either[ServiceFailure, ServiceSuccess]]
+
     val selector = Json.obj(
       "member" -> member,
       "ranking" -> ranking,

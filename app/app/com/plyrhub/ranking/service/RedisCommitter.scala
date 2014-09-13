@@ -49,9 +49,7 @@ class RedisCommitter extends Actor with ActorLogging {
     val member = commit.member
     val opId = commit.opId
 
-
-
-      // It was annotated, so tell Mongo it was done to pull it out from the reconstruction process
+    // It was annotated, so tell Mongo it was done to pull it out from the reconstruction process
       RankingRepo
         .commitScoreForRanking(owner, member, commit.rankings, opId)
         .map(result =>
@@ -59,7 +57,7 @@ class RedisCommitter extends Actor with ActorLogging {
   }
 
   def manageMongoFailure(f:ServiceFailure) = {
-    //log.error("Failure")
+    log.error("Failure")
   }
 
   def manageMongoSuccess(s:ServiceSuccess) = {
