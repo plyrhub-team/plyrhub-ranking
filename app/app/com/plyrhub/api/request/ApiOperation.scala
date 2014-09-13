@@ -120,8 +120,8 @@ class ApiRequestActor(targetProps: Props, init: initBlockType, octx: OperationCo
 
   target ! init(octx, message)
 
-  Utils.actorWatcher ! WatchThis(self)
-  Utils.actorWatcher ! WatchThis(target)
+  //Utils.actorWatcher ! WatchThis(self)
+  //Utils.actorWatcher ! WatchThis(target)
 
   override val supervisorStrategy =
     OneForOneStrategy() {

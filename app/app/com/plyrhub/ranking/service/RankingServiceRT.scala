@@ -17,6 +17,7 @@
 package com.plyrhub.ranking.service
 
 import com.plyrhub.core.PlyrhubRT
+import com.plyrhub.ranking.service.RedisCommitter.Commit
 import com.plyrhub.ranking.service.RedisScorer.Score
 import com.plyrhub.ranking.service.gc.MisterWolf
 import com.plyrhub.ranking.service.gc.MisterWolf.FixMeMisterWorlf
@@ -30,5 +31,9 @@ object RankingServiceRT {
   lazy val redisScorer = PlyrhubRT.actorSystem.actorOf(RedisScorer.props(), "redis-scorer")
 
   def score(score:Score) = redisScorer ! score
+
+  lazy val redisCommitter = PlyrhubRT.actorSystem.actorOf(RedisCommitter.props(), "redis-committer")
+
+  def commit(commit:Commit) = redisCommitter ! commit
 
 }
