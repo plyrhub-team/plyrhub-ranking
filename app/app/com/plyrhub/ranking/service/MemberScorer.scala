@@ -87,8 +87,7 @@ class MemberScorer extends Actor with ActorLogging {
     val fScoreForRankings = RankingRepo.saveScoreForRankings(owner, member, rankings, score, uniqueRepoId)
 
     // Look for the provided rankings to see in they exist
-    //val fRankingsVerification = RankingRepo.verifyRankingsOnMember(owner, member, rankings)
-    val fRankingsVerification = Future.successful(SimpleSuccess())
+    val fRankingsVerification = RankingRepo.verifyRankingsOnMember(owner, member, rankings)
 
     def fResult(scoringResult: ServiceSuccess, verificationResult: ServiceSuccess) = Future {
 
